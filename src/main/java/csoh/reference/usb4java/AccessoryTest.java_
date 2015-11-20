@@ -1,0 +1,206 @@
+package csoh.reference.usb4java;
+
+import java.nio.ByteBuffer;
+import java.util.List;
+
+import javax.usb.UsbConfiguration;
+import javax.usb.UsbConst;
+import javax.usb.UsbEndpoint;
+import javax.usb.UsbEndpointDescriptor;
+import javax.usb.UsbInterface;
+
+import org.usb4java.BufferUtils;
+import org.usb4java.ConfigDescriptor;
+import org.usb4java.Context;
+import org.usb4java.Device;
+import org.usb4java.DeviceDescriptor;
+import org.usb4java.DeviceHandle;
+import org.usb4java.DeviceList;
+import org.usb4java.Interface;
+import org.usb4java.LibUsb;
+import org.usb4java.LibUsbException;
+
+
+public class AccessoryTest {
+
+    private final static byte REQUEST_TYPE_READ = (byte) 0xC0;// 1100 0000 == USB_DIR_IN | USB_TYPE_VENDOR
+
+    private static short VENDOR_ID = (short) 0x04e8; // Tab3, 
+    private static short PRODUCT_ID = (short) 0x6860; // Tab3, 
+    private static short VENDOR_ID_GOOGLE = (short)0x18D1; //google vendorid
+    private static short PRODUCT_ID_GOOGLE = (short)0x2D01 ; //google productid
+    
+    private static int interfaceNum = 1;
+    
+    private static Device device;
+    private static DeviceHandle handle;
+    
+   
+    
+    public static void main(String[] args) {
+	Context context=null;
+	try {
+	    context = init();
+	    int result = setupAccessory("CsohManufacturer", "CsohModel",
+		    "CsohDescription", "1.0", "http://www.mycompany.com",
+		    "SerialNumber"); // Switch android device to accessory mode
+	  //  if (result != LibUsb.SUCCESS) throw new LibUsbException("Unable to setup Accessory", result);
+
+	    LibUsb.attachKernelDriver(handle, interfaceNum);
+	    LibUsb.releaseInterface(handle, interfaceNum);
+	    LibUsb.close(handle);
+	   	    
+	    System.out.println("Sleeping 10 sec");
+	    Thread.sleep(10000);
+	    System.out.println("Finished first handshake");
+	 
+	    context = new Context();
+	    int res = LibUsb.init(context);
+	    device = findDevice(VENDOR_ID_GOOGLE); 
+	    System.out.println("Device obtained now trying to open with handle");
+	    handle = new DeviceHandle();	
+	    result = LibUsb.open(device, handle);
+	    if (result != LibUsb.SUCCESS) throw new LibUsbException("Unable to open USB device", result);
+
+	    result = LibUsb.claimInterface(handle, interfaceNum);
+	    
+	    
+	    System.out.println("Fin");
+
+	} catch (Exception e) {
+	    e.printStackTrace();
+	} finally {
+	    LibUsb.attachKernelDriver(handle, interfaceNum);
+	    LibUsb.releaseInterface(handle, interfaceNum);
+	    LibUsb.close(handle);
+	    LibUsb.exit(context);
+	}
+
+    }
+
+    private static Context init() {
+	Context context = new Context();
+	int result = LibUsb.init(context);
+	if (result != LibUsb.SUCCESS) throw new LibUsbException("Unable to initialize libusb.", result);
+
+	device = findDevice(VENDOR_ID);
+	
+	handle = new DeviceHandle();
+	
+	result = LibUsb.open(device, handle);
+	if (result != LibUsb.SUCCESS) throw new LibUsbException("Unable to open USB device", result);
+
+	detachKernelDriver();
+
+	result = LibUsb.claimInterface(handle, interfaceNum);
+	if (result != LibUsb.SUCCESS)    throw new LibUsbException("Unable to claim interface", result);
+	
+	return context;
+    }
+    
+    
+    private static void detachKernelDriver(){
+	int r = LibUsb.detachKernelDriver(handle, interfaceNum);
+	if (r != LibUsb.SUCCESS && r != LibUsb.ERROR_NOT_SUPPORTED && r != LibUsb.ERROR_NOT_FOUND){
+	    throw new LibUsbException("Unable to detach kernel driver", r);
+	}
+	
+//	int supported = LibUsb.setAutoDetachKernelDriver(handle,true);
+//	if(supported != LibUsb.SUCCESS){
+//	    throw new LibUsbException("Unable to setAutoDetachedKernelDriver because it is not supported",supported);
+//	}
+    }
+
+    private static Device findDevice(short vendorId) {
+	// Read the USB device list
+	DeviceList list = new DeviceList();
+	int result = LibUsb.getDeviceList(null, list);
+	if (result < 0) throw new LibUsbException("Unable to get device list", result);
+
+	try {
+	    // Iterate over all devices and scan for the right one
+	    for (Device device : list) {
+		DeviceDescriptor descriptor = new DeviceDescriptor();
+		result = LibUsb.getDeviceDescriptor(device, descriptor);
+		if (result != LibUsb.SUCCESS)  throw new LibUsbException("Unable to read device descriptor", result);
+		if (descriptor.idVendor() == vendorId
+			//&& descriptor.idProduct() == PRODUCT_ID
+			){
+		    System.out.println("Device found : " + descriptor.idVendor() + "==" + descriptor.idProduct());
+		    return device;
+		}
+	    }
+	} finally {
+	    // Ensure the allocated device list is freed
+	    LibUsb.freeDeviceList(list, true);
+	}
+
+	// Device not found
+	return null;
+    }
+
+    private static int setupAccessory(String vendor, String model, String description, String version, String url, String serial)
+	    throws LibUsbException {
+
+	int response = 0;
+
+	// Setup setup token
+	response = transferSetupPacket(REQUEST_TYPE_READ, (byte) 51);
+
+	System.out.println("After setup token");
+	// Setup data packet
+	response = transferAccessoryDataPacket(vendor, (short) 0);
+	response = transferAccessoryDataPacket(model, (short) 1);
+	response = transferAccessoryDataPacket(description, (short) 2);
+	response = transferAccessoryDataPacket(version, (short) 3);
+	response = transferAccessoryDataPacket(url, (short) 4);
+	response = transferAccessoryDataPacket(serial, (short) 5);
+	System.out.println("After data packet");
+	
+
+	// Setup handshake packet
+	response = transferSetupPacket(LibUsb.REQUEST_TYPE_VENDOR, (byte) 53);
+
+	System.out.println("After handshake packet");
+	
+	LibUsb.releaseInterface(handle, interfaceNum);
+	System.out.println("After release Interface");
+	return response;
+    }
+
+    private static int transferSetupPacket(byte requestType, byte request) throws LibUsbException {
+	int response = 0;
+	byte[] bytebuff = new byte[2];
+	ByteBuffer data = BufferUtils.allocateByteBuffer(bytebuff.length);
+	data.put(bytebuff);
+	
+
+
+	final short wValue = 0;
+	final short wIndex = 0;
+	final long timeout = 0;
+	//data.rewind();
+	//System.out.println("DAta_A=" + data.getShort());
+	response = LibUsb.controlTransfer(handle, requestType, request, wValue,	wIndex, data, timeout);
+	System.out.println("Response=" + response);
+	//data.rewind();
+	//System.out.println("DAta_B=" + data.getShort());
+//	if (response < 0) throw new LibUsbException("Unable to transfer setup packet ", response);
+
+	return response;
+    }
+
+    private static int transferAccessoryDataPacket(String param, short index) {
+	int response;
+	byte[] byteArray = param.getBytes();
+	ByteBuffer data = BufferUtils.allocateByteBuffer(byteArray.length);
+	data.put(byteArray);
+	final byte bRequest = (byte) 52;
+	final short wValue = 0;
+	final long timeout = 0;
+	response = LibUsb.controlTransfer(handle, LibUsb.REQUEST_TYPE_VENDOR,bRequest, wValue, index, data, timeout);
+	if (response < 0) throw new LibUsbException("Unable to control transfer.", response);
+	return response;
+    }
+
+}

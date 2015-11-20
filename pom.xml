@@ -1,0 +1,81 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>csoh.reference</groupId>
+	<artifactId>usb4java</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>usb4java</name>
+	<url>http://maven.apache.org</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- For using usb4java with javax-usb -->
+
+		<dependency>
+			<groupId>org.usb4java</groupId>
+			<artifactId>usb4java-javax</artifactId>
+			<version>1.2.0</version>
+		</dependency>
+
+
+
+	</dependencies>
+	<build>
+		<finalName>UsbTest</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.5.1</version>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+<!-- 							<mainClass>csoh.reference.usb4java.App</mainClass> -->
+<!-- 							<mainClass>csoh.reference.usb4java.AdbDemo</mainClass> -->
+							<mainClass>csoh.reference.usb4java.AccessoryTest</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+			<!-- To include dependencies in jar -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<finalName>UsbTest</finalName>
+				</configuration>
+			</plugin>
+
+
+		</plugins>
+	</build>
+</project>
