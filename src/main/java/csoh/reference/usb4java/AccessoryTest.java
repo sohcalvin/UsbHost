@@ -3,6 +3,7 @@ package csoh.reference.usb4java;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.List;
+import java.util.Scanner;
 
 import javax.usb.UsbConfiguration;
 import javax.usb.UsbConst;
@@ -48,17 +49,33 @@ public class AccessoryTest {
 		    "CsohDescription", "1.0", "http://www.mycompany.com",
 		    "SerialNumber"); // Switch android device to accessory mode
    	    usbForSetup.close();
-   	    
-	    System.out.println("Finished switching android device to accessory mode, Sleeping 10 sec");
-	    Thread.sleep(10000);
-	    /************** Begin communication *********/
-   	    UsbObject usbForCommunication =  new UsbObject(VENDOR_ID_GOOGLE);
-   	    transferBulkData(usbForCommunication.getHandle(), END_POINT_OUT_GOOGLE , 100000);
-   	 System.out.println("Transffered, Sleeping 1000 sec");
-   	    Thread.sleep(1000000);
-   	    
-   	    usbForCommunication.close();
-   	    System.out.println("Fin");
+	    System.out.println("Finished switching android device to accessory mode");
+	    System.out.println("Please click ok on Android device then enter 'done' or 'cancel'");
+	    
+	    Scanner sc = new Scanner(System.in);
+	    boolean proceed = false;
+	    while(true){
+		String status = sc.next();
+		if(status.equalsIgnoreCase("done")) {
+		    proceed = true;
+		    break;
+		}
+		if(status.equalsIgnoreCase("cancel")) {
+		    break;
+		}
+	    }
+	    if(proceed){
+        	    /************** Begin communication *********/
+           	    UsbObject usbForCommunication =  new UsbObject(VENDOR_ID_GOOGLE);
+           	    transferBulkData(usbForCommunication.getHandle(), END_POINT_OUT_GOOGLE , 100000);
+           	    System.out.println("Transffered, Sleeping 1000 sec");
+           	    Thread.sleep(1000000);
+           	    
+           	    usbForCommunication.close();
+           	    System.out.println("Fin");
+	    }else{
+		    System.out.println("User abort complete");
+	    }
    	    
    	}catch(Exception e){
    	    e.printStackTrace();
