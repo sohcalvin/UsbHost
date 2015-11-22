@@ -23,8 +23,14 @@ import org.usb4java.LibUsb;
 import org.usb4java.LibUsbException;
 
 
-public class AccessoryTest {
+public class UsbTestLow implements Runnable{
 
+    private UsbObject currentUsb = null;
+    
+    public UsbTestLow(UsbObject usbObj){
+	currentUsb = usbObj;
+    }
+   
     private final static byte REQUEST_TYPE_READ = (byte) 0xC0;// 1100 0000 == USB_DIR_IN | USB_TYPE_VENDOR
 
     private static short VENDOR_ID = (short) 0x04e8; // Tab3, 
@@ -67,10 +73,14 @@ public class AccessoryTest {
 	    if(proceed){
         	    /************** Begin communication *********/
            	    UsbObject usbForCommunication =  new UsbObject(VENDOR_ID_GOOGLE);
-           	    transferBulkData(usbForCommunication.getHandle(), END_POINT_OUT_GOOGLE , 100000);
-           	    System.out.println("Transffered, Sleeping 1000 sec");
-           	    Thread.sleep(1000000);
-           	    
+           	    UsbTestLow at = new UsbTestLow(usbForCommunication);
+           	    Thread t = new Thread(at);
+           	    t.start();
+           	  
+           	   // transferBulkData(usbForCommunication.getHandle(), END_POINT_OUT_GOOGLE , "Hello how are you?", 100000);
+           	  //  System.out.println("Transffered, Sleeping 1000 sec");
+           	  //  Thread.sleep(1000000);
+           	    t.join();
            	    usbForCommunication.close();
            	    System.out.println("Fin");
 	    }else{
@@ -155,15 +165,45 @@ public class AccessoryTest {
 	if (response < 0) throw new LibUsbException("Unable to control transfer.", response);
 	return response;
     }
-    private static int transferBulkData(DeviceHandle handle, byte endpoint, long timeout){
-	ByteBuffer buffer = ByteBuffer.allocateDirect(8);
-	buffer.put(new byte[] { 65, 67, 68, 69, 70, 71, 72, 82 });
+    
+     private static int transferBulkData(DeviceHandle handle, byte endpoint, String message, long timeout){
+	int len = message.length();
+	ByteBuffer buffer = ByteBuffer.allocateDirect(len);
+	buffer.put(message.getBytes());
+	
+	//ByteBuffer buffer = ByteBuffer.allocateDirect(8);
+	//buffer.put(new byte[] { 65, 67, 68, 69, 70, 71, 72, 82 });
 	IntBuffer transfered = IntBuffer.allocate(1);
 	int result = LibUsb.bulkTransfer(handle, endpoint, buffer, transfered, timeout); 
 	if (result != LibUsb.SUCCESS) throw new LibUsbException("Control transfer failed", result);
 	System.out.println(transfered.get() + " bytes sent");
 	return result;
     
+    }
+     private static int readBulkData(DeviceHandle handle, byte endpoint, int dataLength, long timeout){
+		ByteBuffer buffer = ByteBuffer.allocateDirect(dataLength);
+		IntBuffer transfered = IntBuffer.allocate(1);
+		int result = LibUsb.bulkTransfer(handle, endpoint, buffer, transfered, timeout); 
+		if (result != LibUsb.SUCCESS) throw new LibUsbException("Control transfer failed", result);
+		
+		byte[] placeholder = new byte[dataLength];
+		buffer.get(placeholder, 0, dataLength); 
+		System.out.println(new String(placeholder) + " <<<<<");
+		
+		return result;
+} 
+
+    @Override
+    public void run() {
+	Scanner scan = new Scanner(System.in);
+	while(true){
+	    String messageToSend = scan.next();
+	    if(messageToSend.equalsIgnoreCase("quit")) break;
+	    System.out.println("Begin transfering " + messageToSend);
+	    transferBulkData(currentUsb.getHandle(), END_POINT_OUT_GOOGLE , messageToSend, 10000);
+	    //readBulkData(currentUsb.getHandle(), END_POINT_IN_GOOGLE , 32, 10000);
+	    
+	}
     }
 
 }

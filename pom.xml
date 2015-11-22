@@ -51,9 +51,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-<!-- 							<mainClass>csoh.reference.usb4java.App</mainClass> -->
-<!-- 							<mainClass>csoh.reference.usb4java.AdbDemo</mainClass> -->
-							<mainClass>csoh.reference.usb4java.AccessoryTest</mainClass>
+							<mainClass>csoh.reference.usb4java.UsbTestLow</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
