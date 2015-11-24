@@ -16,12 +16,12 @@ public class UsbObject {
         return handle;
     }
     private static final short PRODUCT_ID_DONT_CARE = -1;
-    public UsbObject(short vendorId) {
+    public UsbObject(short vendorId) throws DeviceNotFoundException {
 	this(vendorId,PRODUCT_ID_DONT_CARE );
     }
-    public UsbObject(short vendorId, short productId) {
+    public UsbObject(short vendorId, short productId) throws DeviceNotFoundException{
 	device = findDevice(vendorId, productId);
-	
+	if(device == null) throw new DeviceNotFoundException("Unable to find device for vendorId=" + vendorId +" and productId=" + productId);
 	handle = new DeviceHandle();
 
 	int result = LibUsb.open(device, handle);
