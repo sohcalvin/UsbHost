@@ -1,5 +1,7 @@
 package csoh.reference.usb4java;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.List;
@@ -48,6 +50,22 @@ public class UsbTestLow implements Runnable {
     // private static DeviceHandle handle;
     //
     public static void main(String[] args) {
+	  Gui gui = new GuiImpl();
+	  gui.setProgressLevel(1);
+	  gui.setProgressLevel(1);
+	  gui.setProgressLevel(1);
+	  
+	 
+	   try {
+		    Thread.sleep(5000);
+		} catch (InterruptedException e) {
+		    // TODO Auto-generated catch block
+		    e.printStackTrace();
+		}
+    }
+      public static void main2(String[] args) {
+	
+	  
 	Context context = null;
 	try {
 	    context = init();
@@ -213,6 +231,8 @@ public class UsbTestLow implements Runnable {
 
 	return result;
     }
+    
+ 
 
     @Override
     public void run() {

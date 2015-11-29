@@ -11,7 +11,7 @@ if(! defined($WHAT)){
 
 
 ################################################
-# 1) rtm.jar@web
+# 1) UsbTest
 ################################################
 if($WHAT eq "UsbTest"){
 	my $passwd = getFtpPasswd('pi@berry');
@@ -51,6 +51,7 @@ sub getFtpPasswd{
 		$key =~ s/^\s+|\s+$//g;
 		$pass =~ s/^\s+|\s+$//g;
 		if($key eq $keyName){
+			#print $pass."<<\n";
 			return $pass;
 		}
 	} 
