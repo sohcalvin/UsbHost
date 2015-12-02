@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -38,14 +39,17 @@ public class UsbTestLow implements Runnable {
     private static byte END_POINT_OUT_GOOGLE = (byte) 0x02; // for interface ==
 
     private static UsbTestLow instance = null;
-    public static UsbTestLow getInstance(){
-	if(instance == null){
-	    synchronized(UsbTestLow.class){
-		if(instance == null) return new UsbTestLow();
+
+    public static UsbTestLow getInstance() {
+	if (instance == null) {
+	    synchronized (UsbTestLow.class) {
+		if (instance == null)
+		    return new UsbTestLow();
 	    }
 	}
 	return instance;
     }
+
     private UsbTestLow() {
 	init();
     }
@@ -57,8 +61,13 @@ public class UsbTestLow implements Runnable {
     public void setupUsb(short vendor_id) throws DeviceNotFoundException {
 	currentUsb = new UsbObject(vendor_id);
     }
-    public void setupUsbForAndroid()throws DeviceNotFoundException {
+
+    public void setupUsbForAndroid() throws DeviceNotFoundException {
 	setupUsb(VENDOR_ID_GOOGLE);
+    }
+
+    public void sendMessageToAndroid(String messageToSend) {
+	transferBulkData(currentUsb.getHandle(), END_POINT_OUT_GOOGLE, messageToSend, 10000);
     }
 
     private void init() {
@@ -91,7 +100,7 @@ public class UsbTestLow implements Runnable {
 
 		usbControl.setupUsb(VENDOR_ID);
 		// Switch android device to Accessory mode
-		int result = usbControl.androidDeviceToAccessoryMode("CsohManufacturer", "CsohModel", "CsohDescription", "1.0", "http://www.mycompany.com", "SerialNumber"); 
+		int result = usbControl.androidDeviceToAccessoryMode("CsohManufacturer", "CsohModel", "CsohDescription", "1.0", "http://www.mycompany.com", "SerialNumber");
 		System.out.println("Finished switching android device to accessory mode");
 		System.out.println("Please click ok on Android device then enter 'done' or 'cancel'");
 
@@ -134,9 +143,10 @@ public class UsbTestLow implements Runnable {
 	    usbControl.exit();
 	}
     }
-    public void hello(){
+
+    public void hello() {
 	System.out.println("Hellow");
-	
+
     }
 
     public int androidDeviceToAccessoryMode(String vendor, String model, String description, String version, String url, String serial) throws LibUsbException, GeneralException {
@@ -223,7 +233,7 @@ public class UsbTestLow implements Runnable {
 
     }
 
-    private static int readBulkData(DeviceHandle handle, byte endpoint, int dataLength, long timeout) {
+    private int readBulkData(DeviceHandle handle, byte endpoint, int dataLength, long timeout) {
 	ByteBuffer buffer = ByteBuffer.allocateDirect(dataLength);
 	IntBuffer transfered = IntBuffer.allocate(1);
 	int result = LibUsb.bulkTransfer(handle, endpoint, buffer, transfered, timeout);
@@ -233,8 +243,16 @@ public class UsbTestLow implements Runnable {
 	byte[] placeholder = new byte[dataLength];
 	buffer.get(placeholder, 0, dataLength);
 	System.out.println(new String(placeholder) + " <<<<<");
+	for(UsbMessageListener u : usbMessageListeners ){
+	    u.onMessageFromUsb(new String(placeholder));
+	}
 
 	return result;
+    }
+    
+    ArrayList<UsbMessageListener> usbMessageListeners = new ArrayList<UsbMessageListener>();
+    public void addUsbMessageListener(UsbMessageListener umListener){
+	usbMessageListeners.add(umListener);
     }
 
     @Override
@@ -246,10 +264,9 @@ public class UsbTestLow implements Runnable {
 	    String messageToSend = scan.next();
 	    if (messageToSend.equalsIgnoreCase("quit"))
 		break;
-	    System.out.println("Begin transfering " + messageToSend);
-	    transferBulkData(currentUsb.getHandle(), END_POINT_OUT_GOOGLE, messageToSend, 10000);
-	    // readBulkData(currentUsb.getHandle(), END_POINT_IN_GOOGLE , 32,
-	    // 10000);
+	    //System.out.println("Begin transfering " + messageToSend);
+	    //transferBulkData(currentUsb.getHandle(), END_POINT_OUT_GOOGLE, messageToSend, 10000);
+	    readBulkData(currentUsb.getHandle(), END_POINT_IN_GOOGLE, 32, 10000);
 
 	}
     }
