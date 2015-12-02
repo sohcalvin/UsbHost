@@ -51,8 +51,6 @@
 			<version>1.2.1</version>
 		</dependency>
 
-
-
 	</dependencies>
 	<build>
 		<finalName>UsbTest</finalName>

@@ -26,62 +26,72 @@ import org.usb4java.LibUsbException;
 
 public class UsbTestLow implements Runnable {
 
+    private Context context = null;
     private UsbObject currentUsb = null;
 
-    public UsbTestLow(UsbObject usbObj) {
-	currentUsb = usbObj;
-    }
-
-    private final static byte REQUEST_TYPE_READ = (byte) 0xC0;// 1100 0000 ==
-							      // USB_DIR_IN |
-							      // USB_TYPE_VENDOR
-
+    private final static byte REQUEST_TYPE_READ = (byte) 0xC0;// 1100 0000 == USB_DIR_IN | USB_TYPE_VENDOR
     private static short VENDOR_ID = (short) 0x04e8; // Tab3,
     private static short PRODUCT_ID = (short) 0x6860; // Tab3,
     private static short VENDOR_ID_GOOGLE = (short) 0x18D1; // google vendorid
     private static short PRODUCT_ID_GOOGLE = (short) 0x2D01; // google productid
     private static byte END_POINT_IN_GOOGLE = (byte) 0x81; // for interface == 1
     private static byte END_POINT_OUT_GOOGLE = (byte) 0x02; // for interface ==
-							    // 1
+
+    private static UsbTestLow instance = null;
+    public static UsbTestLow getInstance(){
+	if(instance == null){
+	    synchronized(UsbTestLow.class){
+		if(instance == null) return new UsbTestLow();
+	    }
+	}
+	return instance;
+    }
+    private UsbTestLow() {
+	init();
+    }
+
+    public void setupUsb(short vendor_id, short product_id) throws DeviceNotFoundException {
+	currentUsb = new UsbObject(vendor_id, product_id);
+    }
+
+    public void setupUsb(short vendor_id) throws DeviceNotFoundException {
+	currentUsb = new UsbObject(vendor_id);
+    }
+    public void setupUsbForAndroid()throws DeviceNotFoundException {
+	setupUsb(VENDOR_ID_GOOGLE);
+    }
+
+    private void init() {
+	context = new Context();
+	int result = LibUsb.init(context);
+	if (result != LibUsb.SUCCESS)
+	    throw new LibUsbException("Unable to initialize libusb.", result);
+    }
+
+    void closeUsbObject() {
+	currentUsb.close();
+    }
+
+    void exit() {
+	LibUsb.exit(context);
+    }
 
     // private static int interfaceNum = 1;
-    //
     // private static Device device;
     // private static DeviceHandle handle;
     //
     public static void main(String[] args) {
-	  Gui gui = new GuiImpl();
-	  gui.setProgressLevel(1);
-	  gui.setProgressLevel(1);
-	  gui.setProgressLevel(1);
-	  
-	 
-	   try {
-		    Thread.sleep(5000);
-		} catch (InterruptedException e) {
-		    // TODO Auto-generated catch block
-		    e.printStackTrace();
-		}
-    }
-      public static void main2(String[] args) {
-	
-	  
-	Context context = null;
+
+	UsbTestLow usbControl = getInstance();
 	try {
-	    context = init();
 	    /************** Switch Android device to Accessory mode *********/
 	    boolean proceed = false;
-	    try {
-		UsbObject usbForSetup = new UsbObject(VENDOR_ID);
 
-		int result = androidDeviceToAccessoryMode(usbForSetup, "CsohManufacturer", "CsohModel",
-			"CsohDescription", "1.0", "http://www.mycompany.com", "SerialNumber"); // Switch
-											       // android
-											       // device
-											       // to
-											       // accessory
-											       // mode
-		usbForSetup.close();
+	    try {
+
+		usbControl.setupUsb(VENDOR_ID);
+		// Switch android device to Accessory mode
+		int result = usbControl.androidDeviceToAccessoryMode("CsohManufacturer", "CsohModel", "CsohDescription", "1.0", "http://www.mycompany.com", "SerialNumber"); 
 		System.out.println("Finished switching android device to accessory mode");
 		System.out.println("Please click ok on Android device then enter 'done' or 'cancel'");
 
@@ -104,17 +114,15 @@ public class UsbTestLow implements Runnable {
 	    if (proceed) {
 		/************** Begin communication *********/
 		System.out.println("Begin communication");
-		UsbObject usbForCommunication = new UsbObject(VENDOR_ID_GOOGLE);
-		UsbTestLow at = new UsbTestLow(usbForCommunication);
-		Thread t = new Thread(at);
+		usbControl.setupUsb(VENDOR_ID_GOOGLE);
+		Thread t = new Thread(usbControl);
 		t.start();
-
 		// transferBulkData(usbForCommunication.getHandle(),
 		// END_POINT_OUT_GOOGLE , "Hello how are you?", 100000);
 		// System.out.println("Transffered, Sleeping 1000 sec");
 		// Thread.sleep(1000000);
 		t.join();
-		usbForCommunication.close();
+		usbControl.closeUsbObject();
 		System.out.println("Fin");
 	    } else {
 		System.out.println("User abort complete");
@@ -123,21 +131,17 @@ public class UsbTestLow implements Runnable {
 	} catch (Exception e) {
 	    e.printStackTrace();
 	} finally {
-	    LibUsb.exit(context);
+	    usbControl.exit();
 	}
     }
-
-    private static Context init() {
-	Context context = new Context();
-	int result = LibUsb.init(context);
-	if (result != LibUsb.SUCCESS)
-	    throw new LibUsbException("Unable to initialize libusb.", result);
-	return context;
+    public void hello(){
+	System.out.println("Hellow");
+	
     }
 
-    private static int androidDeviceToAccessoryMode(UsbObject usbObject, String vendor, String model,
-	    String description, String version, String url, String serial) throws LibUsbException, GeneralException {
+    public int androidDeviceToAccessoryMode(String vendor, String model, String description, String version, String url, String serial) throws LibUsbException, GeneralException {
 
+	UsbObject usbObject = currentUsb;
 	int response = 0;
 	DeviceHandle handle = usbObject.getHandle();
 
@@ -164,10 +168,11 @@ public class UsbTestLow implements Runnable {
 
 	// LibUsb.releaseInterface(handle, interfaceNum);
 	// System.out.println("After release Interface");
+	usbObject.close();
 	return response;
     }
 
-    private static int transferSetupPacket(DeviceHandle handle, byte requestType, byte request) throws LibUsbException {
+    private int transferSetupPacket(DeviceHandle handle, byte requestType, byte request) throws LibUsbException {
 	int response = 0;
 	byte[] bytebuff = new byte[2];
 	ByteBuffer data = BufferUtils.allocateByteBuffer(bytebuff.length);
@@ -231,14 +236,12 @@ public class UsbTestLow implements Runnable {
 
 	return result;
     }
-    
- 
 
     @Override
     public void run() {
 	Scanner scan = new Scanner(System.in);
 	System.out.println("Please enter text to send or 'quit' to exit");
-	
+
 	while (true) {
 	    String messageToSend = scan.next();
 	    if (messageToSend.equalsIgnoreCase("quit"))

@@ -6,4 +6,6 @@ public interface Gui {
 
     void setMessageFromClient(String mess);
     
+ 
+    
 }
