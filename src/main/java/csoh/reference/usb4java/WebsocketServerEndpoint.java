@@ -18,8 +18,7 @@ import org.glassfish.tyrus.server.Server;
 
 @ServerEndpoint("/usbhost")
 public class WebsocketServerEndpoint implements UsbMessageListener{
-    private static final String CONNECT_USB_VENDOR = "CONNECT_USB_VENDOR";
-    private static final String ANDROID_TO_ACCESSORY = "ANDROID_TO_ACCESSORY";
+    private static final String CONNECT_VENDOR_USB_TO_ACCESSORY = "CONNECT_VENDOR_USB_TO_ACCESSORY";
     private static final String CONNECT_USB_ACCESSORY = "CONNECT_USB_ACCESSORY";
     private static final String SEND_USB = "SEND_USB";
 
@@ -29,12 +28,21 @@ public class WebsocketServerEndpoint implements UsbMessageListener{
     
     HashMap<String, Session> sessions = new HashMap<String, Session>();
     
+    private void doTest() {
+	try {
+	    for (int i = 0; i < 1000000; i++)
+		broadCast("mess");
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+    }
 
     @OnOpen
     public void open(Session session) {
 	System.out.println("Open session " + session);
 	System.out.println("Websocket this> " + this);
 	sessions.put(session.getId(), session);
+	doTest();
     }
 
     @OnClose
@@ -60,13 +68,10 @@ public class WebsocketServerEndpoint implements UsbMessageListener{
 	
 	try {
 	    switch (cmd) {
-	    case CONNECT_USB_VENDOR:
+	    case CONNECT_VENDOR_USB_TO_ACCESSORY:
 		System.out.println("Preparing to connect to Vendor USB");
 		short tab3_vendorid = (short) 0x04e8; // Tab3,
 		usbController.setupUsb(tab3_vendorid);
-		break;
-	    case ANDROID_TO_ACCESSORY:
-		System.out.println("Switch android to accessory");
 		int result = usbController.androidDeviceToAccessoryMode("CsohManufacturer", "CsohModel", "CsohDescription", "1.0", "http://www.mycompany.com", "SerialNumber");
 		break;
 
