@@ -12,7 +12,7 @@ app.factory("WebSocketClient", function(){
 
                ws.onmessage = function (evt){
                   var received_msg = evt.data;
-                  //superController.appendStatus("Recv : " + received_msg); 
+                  superController.appendStatus("Recv : " + received_msg); 
                   superController.incrementCount(); 
                };
 
