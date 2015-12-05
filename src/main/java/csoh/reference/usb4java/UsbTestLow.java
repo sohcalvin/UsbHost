@@ -94,7 +94,7 @@ public class UsbTestLow implements Runnable {
     // private static DeviceHandle handle;
     //
     public static void main(String[] args) {
-	
+
 	WebsocketServerEndpoint ws = new WebsocketServerEndpoint();
 	UsbTestLow.getInstance().addUsbMessageListener(ws);
 	try {
@@ -263,35 +263,33 @@ public class UsbTestLow implements Runnable {
 
 	byte[] placeholder = new byte[dataLength];
 	buffer.get(placeholder, 0, dataLength);
-	System.out.println(new String(placeholder) + " <<<<<");
-	for (UsbMessageListener u : usbMessageListeners) {
-	    u.onMessageFromUsb(new String(placeholder));
-	}
-
+	String usbInMessage = new String(placeholder); 
+	notifyUsbMessageListeners(usbInMessage);
 	return result;
     }
 
     ArrayList<UsbMessageListener> usbMessageListeners = new ArrayList<UsbMessageListener>();
 
-    public void addUsbMessageListener(UsbMessageListener umListener) {
+    private void addUsbMessageListener(UsbMessageListener umListener) {
 	usbMessageListeners.add(umListener);
+    }
+    
+    private void notifyUsbMessageListeners(String message){
+	for (UsbMessageListener u : usbMessageListeners) {
+	    u.onMessageFromUsb(message);
+	}
     }
 
     @Override
     public void run() {
-	//Scanner scan = new Scanner(System.in);
-	//System.out.println("Please enter text to send or 'quit' to exit");
-	System.out.println("Reading from USB port ...");
-	while (true) {
-//	    String messageToSend = scan.next();
-//	    if (messageToSend.equalsIgnoreCase("quit"))
-//		break;
-	    // System.out.println("Begin transfering " + messageToSend);
-	    // transferBulkData(currentUsb.getHandle(), END_POINT_OUT_GOOGLE,
-	    // messageToSend, 10000);
-	    readBulkData(currentUsb.getHandle(), END_POINT_IN_GOOGLE, 32, 10000);
-
+	try {
+	    while (true) {
+		readBulkData(currentUsb.getHandle(), END_POINT_IN_GOOGLE, 32, 0);
+	    }
+	} catch (Exception e) {
+	    notifyUsbMessageListeners(e.toString());
 	}
+
     }
 
 }

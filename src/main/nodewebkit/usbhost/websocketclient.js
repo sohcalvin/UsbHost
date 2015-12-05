@@ -1,13 +1,12 @@
 
-app.factory("WebSocketClient", function(WS_READY_STATE) {
+app.factory("WebSocketClient", function(WS_READY_STATE,CONFIG) {
 	var fac = {};
 	fac.superController = undefined;
 	fac.ws = undefined;
 	fac.init = function(superController) {
 		this.superController = superController;
 		if ("WebSocket" in window) {
-			//var ws = new WebSocket("ws://localhost:8025/websocket/usbhost");
-			var ws = new WebSocket("ws://berry:8025/websocket/usbhost");
+			var ws = new WebSocket(CONFIG.SERVER_ENDPOINT);
 			this.ws = ws;
 			ws.onopen = function() {
 				superController.appendStatus("Websocket connected");

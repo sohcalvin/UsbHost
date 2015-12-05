@@ -3,7 +3,6 @@ package csoh.reference.usb4java;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.websocket.DeploymentException;
@@ -29,18 +28,13 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
     HashMap<String, Session> sessions = new HashMap<String, Session>();
 
     private void doTest() {
-	try {
 	    for (int i = 0; i < 1000000; i++)
 		broadCast("mess");
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
     }
 
     @OnOpen
     public void open(Session session) {
-	System.out.println("Open session " + session);
-	System.out.println("Websocket this> " + this);
+	System.out.println("Websocket session opened sessionId='" + session.getId() + "', instance='" + this.toString() + "'");
 	sessions.put(session.getId(), session);
 	//doTest();
     }
@@ -70,25 +64,27 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 	    switch (cmd) {
 	    case USBCON_VENDOR_SWITCH_TO_ACCESSORY:
 		System.out.println("Preparing to connect to Vendor USB");
-		short tab3_vendorid = (short) 0x04e8; // Tab3,
-		usbController.setupUsb(tab3_vendorid);
-		int result = usbController.androidDeviceToAccessoryMode("CsohManufacturer", "CsohModel", "CsohDescription", "1.0", "http://www.mycompany.com", "SerialNumber");
+		try {
+		    short tab3_vendorid = (short) 0x04e8; // Tab3,
+		    usbController.setupUsb(tab3_vendorid);
+		    int result = usbController.androidDeviceToAccessoryMode("CsohManufacturer", "CsohModel", "CsohDescription", "1.0", "http://www.mycompany.com", "SerialNumber");
+		} catch (Exception e) {
+		    broadCast(e.toString());
+		    System.out.println(e);
+		}
 		break;
 
 	    case USBCON_ACCESSORY:
 		System.out.println("Connect to usb accessory");
-
-		usbController.setupUsbForAndroid();
-		System.out.println("Begin communication");
-		Thread t = new Thread(usbController);
-		t.start();
-		// transferBulkData(usbForCommunication.getHandle(),
-		// END_POINT_OUT_GOOGLE , "Hello how are you?", 100000);
-		// System.out.println("Transffered, Sleeping 1000 sec");
-		// Thread.sleep(1000000);
-		// t.join();
-		// usbControl.closeUsbObject();
-		System.out.println("Fin");
+		try {
+		    usbController.setupUsbForAndroid();
+		    Thread t = new Thread(usbController);
+		    t.start();
+		} catch (Exception e) {
+		    broadCast(e.toString());
+		    System.out.println(e);
+		    ;
+		}
 		break;
 
 	    case SEND_USB:
@@ -100,19 +96,22 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 
 	    }
 	} catch (Exception e) {
-	    e.printStackTrace();
-	    try {
-		broadCast(e.toString());
-	    } catch (IOException e1) {
-		e1.printStackTrace();
-	    }
+	    System.out.println(e);
+	    broadCast(e.toString());
+
 	}
 
     }
 
-    public void broadCast(String message) throws IOException {
+    private void broadCast(String message) {
 	for (Session s : sessions.values()) {
-	    s.getBasicRemote().sendText(message);
+
+	    try {
+		s.getBasicRemote().sendText(message);
+	    } catch (Exception e) {
+		System.out.println("Error broadcasting messages to ws clients");
+		System.out.println(e);
+	    }
 	}
     }
 
@@ -135,7 +134,7 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 	try {
 	    ws.startServer("localhost", 8025, "/websocket");
 	    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-	    System.out.print("Please press a key to stop the server.");
+	    System.out.print("Please press a key to stop the server.\n");
 	    reader.readLine();
 	} catch (Exception e) {
 	    e.printStackTrace();
@@ -146,12 +145,7 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 
     @Override
     public void onMessageFromUsb(String message) {
-	try {
-	    broadCast(message);
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
-
+	broadCast(message);
     }
 
 }

@@ -1,4 +1,10 @@
 var app = angular.module('SuperApp', []);
+app.constant("CONFIG", {
+	XSERVER_ENDPOINT : "ws://berry:8025/websocket/usbhost",
+	SERVER_ENDPOINT : "ws://localhost:8025/websocket/usbhost"
+		
+});
+
 app.constant("WS_READY_STATE", {
 	0 : "Connection not established",
 	1 : "Connection established",
