@@ -91,8 +91,6 @@
 					<finalName>UsbTest</finalName>
 				</configuration>
 			</plugin>
-
-
-		</plugins>
+	</plugins>
 	</build>
 </project>

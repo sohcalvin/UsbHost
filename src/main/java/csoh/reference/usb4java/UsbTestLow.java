@@ -101,7 +101,7 @@ public class UsbTestLow implements Runnable {
 
 	    ws.startServer("localhost", 8025, "/websocket");
 	    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-	    System.out.print("Please press a key to stop the server.");
+	    System.out.print("Please press a key to stop the server.\n");
 	    reader.readLine();
 	} catch (Exception e) {
 	    e.printStackTrace();
@@ -265,6 +265,7 @@ public class UsbTestLow implements Runnable {
 	buffer.get(placeholder, 0, dataLength);
 	String usbInMessage = new String(placeholder); 
 	notifyUsbMessageListeners(usbInMessage);
+	System.out.println(">>>>"+usbInMessage);
 	return result;
     }
 
@@ -284,9 +285,12 @@ public class UsbTestLow implements Runnable {
     public void run() {
 	try {
 	    while (true) {
+		System.out.println(">>Before readBulkData()");
 		readBulkData(currentUsb.getHandle(), END_POINT_IN_GOOGLE, 32, 0);
+		System.out.println(">>>>>After readBulkData()");
 	    }
 	} catch (Exception e) {
+	    e.printStackTrace();
 	    notifyUsbMessageListeners(e.toString());
 	}
 
