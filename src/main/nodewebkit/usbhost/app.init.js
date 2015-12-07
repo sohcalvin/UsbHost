@@ -17,3 +17,16 @@ app.constant("COMMAND",{
 	SEND_USB : "SEND_USB"
 	
 });
+app.directive('scrollToBottomOnUpdate', function() {
+	  return {
+	    restrict: 'A',
+	    link: function(scope, elem) {
+	    	  scope.$watch(function () {
+	              return elem[0].value;
+	          },
+	          function (e) {
+	              elem[0].scrollTop = elem[0].scrollHeight;
+	          });
+	    }
+	  }
+	});

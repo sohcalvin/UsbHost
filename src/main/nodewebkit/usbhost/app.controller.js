@@ -13,6 +13,8 @@ app.controller('SuperController', function($scope, WebSocketClient,COMMAND) {
 	$scope.appendStatus = function(message) {
 		$scope.status += message + "\n";
 		$scope.$apply();
+		//var textarea = document.getElementById('comment');
+		//textarea.scrollTop = textarea.scrollHeight;
 	};
 	$scope.sendMessage = function() {
 		WebSocketClient.sendMessage(COMMAND.SEND_USB + ":" +$scope.message);
