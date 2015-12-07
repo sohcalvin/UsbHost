@@ -19,8 +19,8 @@ app.constant("COMMAND",{
 });
 app.directive('scrollToBottomOnUpdate', function() {
 	  return {
-	    restrict: 'A',
-	    link: function(scope, elem) {
+	    restrict: 'A', //E = element, A = attribute, C = class, M = comment
+	    link: function(scope, elem,attrs) {
 	    	  scope.$watch(function () {
 	              return elem[0].value;
 	          },
