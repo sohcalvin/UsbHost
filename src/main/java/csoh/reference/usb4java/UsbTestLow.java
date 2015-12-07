@@ -47,8 +47,9 @@ public class UsbTestLow implements Runnable {
 	public static UsbTestLow getInstance() {
 		if (instance == null) {
 			synchronized (UsbTestLow.class) {
-				if (instance == null)
-					return new UsbTestLow();
+				if (instance == null){
+					instance =  new UsbTestLow();
+				}
 			}
 		}
 		return instance;
@@ -98,7 +99,10 @@ public class UsbTestLow implements Runnable {
 	public static void main(String[] args) {
 
 		WebsocketServerEndpoint ws = new WebsocketServerEndpoint();
-		UsbTestLow.getInstance().addUsbMessageListener(ws);
+		UsbTestLow utl = UsbTestLow.getInstance();
+		utl.addUsbMessageListener(ws);
+		utl.printOut("WS hashCode = " +ws.hashCode());
+		utl.printOut("UTL hashCode = " +utl.hashCode());
 		try {
 
 			ws.startServer("localhost", 8025, "/websocket");
@@ -284,18 +288,22 @@ public class UsbTestLow implements Runnable {
 		buffer.get(placeholder, 0, dataLength);
 		String usbInMessage = new String(placeholder);
 		notifyUsbMessageListeners(usbInMessage);
-		System.out.println(">>>>" + usbInMessage);
+		printOut( usbInMessage);
 		return result;
 	}
 
 	ArrayList<UsbMessageListener> usbMessageListeners = new ArrayList<UsbMessageListener>();
 
 	void addUsbMessageListener(UsbMessageListener umListener) {
+	    printOut("addUsbMessageListener ");
 		usbMessageListeners.add(umListener);
 	}
 
 	private void notifyUsbMessageListeners(String message) {
+	    printOut("In notifyUsbMessageListeners(" +message+")" );
+	    printOut("Number of listeners = '" +usbMessageListeners.size()+"" );
 		for (UsbMessageListener u : usbMessageListeners) {
+		    printOut("Listener hashCode = " + u.hashCode());
 			u.onMessageFromUsb(message);
 		}
 	}
@@ -305,6 +313,7 @@ public class UsbTestLow implements Runnable {
 		try {
 			while (true) {
 				System.out.println(">>Before readBulkData()");
+				notifyUsbMessageListeners("Waiting to readBulkData from device");
 				readBulkData(currentUsb.getHandle(), END_POINT_IN_GOOGLE, 32, 0);
 				System.out.println(">>>>>After readBulkData()");
 			}
@@ -313,6 +322,10 @@ public class UsbTestLow implements Runnable {
 			notifyUsbMessageListeners(e.toString());
 		}
 
+	}
+	
+	private void printOut(String mess){
+	    System.out.println("UsbTestLow:"+this.hashCode() + ">" + mess);
 	}
 
 }
