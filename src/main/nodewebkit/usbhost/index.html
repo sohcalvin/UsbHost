@@ -1,52 +1,69 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Hello Node-Webkit</title>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
-	
-	<link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css">
-	<script src="./node_modules/jquery/dist/jquery.min.js"></script>
-	<script src="./node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+<title>Hello Node-Webkit</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script
+	src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
 
-	<script src="./setup.js"></script>
-	<script src="./app.init.js"></script>
-	<!-- <script src="./websocketserver.js"></script> -->
-	<script src="./websocketclient.js"></script>
-	<script src="./app.controller.js"></script>
+<link rel="stylesheet"
+	href="./node_modules/bootstrap/dist/css/bootstrap.min.css">
+<script src="./node_modules/jquery/dist/jquery.min.js"></script>
+<script src="./node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+
+<script src="./setup.js"></script>
+<script src="./app.init.js"></script>
+<!-- <script src="./websocketserver.js"></script> -->
+<script src="./websocketclient.js"></script>
+<script src="./app.controller.js"></script>
+<style type="text/css">
+.form-control {
+	width: 100%;
+}
+
+.pad {
+	padding-top: 15px;
+}
+</style>
 
 
 </head>
 <body>
-<div ng-app="SuperApp" ng-controller="SuperController">
-	<div class="panel panel-default">
-  		<div class="panel-body">
-<!-- 			<div class="btn-group-vertical"> -->
-			<button type="button" class="btn btn-primary" ng-click="sendConnectVendorUSB()">Connect to vendor USB device and switch to accessory mode</button>
-			<button type="button" class="btn btn-success" ng-click="sendConnectAndroidUSB()">Reconnect to Android USB</button>
-<!-- 			</div> -->
+	<div ng-app="SuperApp" ng-controller="SuperController">
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<!-- 			<div class="btn-group-vertical"> -->
+				<div class="container">
+				 <div class="row">
+					
+					<button type="button" class="btn btn-primary"
+						ng-click="sendConnectVendorUSB()">Connect to vendor USB
+						device and switch to accessory mode</button>
+						</div>
+						 <div class="row pad">
+					<button type="button" class="btn btn-success"
+						ng-click="sendConnectAndroidUSB()">Reconnect to Android
+						USB</button>
+						</div>
+				</div>
+				<!-- 			</div> -->
+			</div>
 		</div>
-	</div>
 
-	<div style="padding-top: 5px;">
-       		<p> Message : <input id="messageInput" type="text" ng-model="message" /> </p>
-		<button id="sendButt" ng-click="sendMessage()">Send</button>
-	</div>
+		<div class="pad">
+			<input id="messageInput" type="text" ng-model="message" />
+			<button id="sendButt" ng-click="sendMessage()">Send to USB</button>
+		</div>
 
- 	<h1>Count : {{ count  						}}</h1>
-<!--	<div class="progress">
-  		<div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: {{count}}%;">
-    			<span class="sr-only">60% Complete</span>
-  		</div>
-	</div>
-	-->
-	<button id="mybutt" ng-click="count = count + 1">Click me!</button>
-	<div class="form-group">
-		<label for="status">Status:</label>
-		<textarea class="form-control" rows="5" id="comment" ng-model="status"></textarea>
-	</div>
- 	<!-- 
+
+
+		<div class="form-group pad">
+			<label for="status">Status:</label>
+			<textarea class="form-control" rows="15" id="comment"
+				ng-model="status"></textarea>
+		</div>
+		<!-- 
 	<div style="padding-top: 5px;">
  	<p>Name : <input type="text" ng-model="name"></p>
 	</div>
@@ -54,7 +71,17 @@
  	<h1>Say {{ name + " : " + getFullName() 			}}</h1>
  	<h1>Say {{ name + " : " + getFullName() | uppercase 		}}</h1> 
 	-->
-</div>
+		<div class="pad" />
+		<button id="mybutt" ng-click="count = count + 1">Increment
+			count</button>
+		<h1>Count : {{ count }}</h1>
+		<!--	<div class="progress">
+  		<div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: {{count}}%;">
+    			<span class="sr-only">60% Complete</span>
+  		</div>
+	</div>
+	-->
+	</div>
 
 
 

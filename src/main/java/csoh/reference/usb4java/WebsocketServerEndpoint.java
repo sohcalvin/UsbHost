@@ -17,153 +17,164 @@ import org.glassfish.tyrus.server.Server;
 
 @ServerEndpoint("/usbhost")
 public class WebsocketServerEndpoint implements UsbMessageListener {
-    private static final String USBCON_VENDOR_SWITCH_TO_ACCESSORY = "USBCON_VENDOR_SWITCH_TO_ACCESSORY";
-    private static final String USBCON_ACCESSORY = "USBCON_ACCESSORY";
-    private static final String SEND_USB = "SEND_USB";
-    private static final String GET_SERVER_INFO = "GET_SERVER_INFO";
-    
-    private static final String LOGPREFIX = "WEBSOCKET >> ";
-    private Server server = null;
+	private static final String USBCON_VENDOR_SWITCH_TO_ACCESSORY = "USBCON_VENDOR_SWITCH_TO_ACCESSORY";
+	private static final String USBCON_ACCESSORY = "USBCON_ACCESSORY";
+	private static final String SEND_USB = "SEND_USB";
+	private static final String GET_SERVER_INFO = "GET_SERVER_INFO";
 
-    UsbTestLow usbController = UsbTestLow.getInstance();
+	private static final String LOGPREFIX = "WEBSOCKET >> ";
+	private Server server = null;
 
-    HashMap<String, Session> sessions = new HashMap<String, Session>();
+	UsbTestLow usbController = UsbTestLow.getInstance();
 
-    private void doTest() {
-	    for (int i = 0; i < 100; i++)
-		broadCast("mess");
-    }
+	HashMap<String, Session> sessions = new HashMap<String, Session>();
 
-    @OnOpen
-    public void open(Session session) {
-	printOut("Websocket session opened sessionId='" + session.getId() + "', instance='" + this.toString() + "'");
-	sessions.put(session.getId(), session);
-	broadCast("Server message : Connected");
-	broadCast(getServerInfo());
-	//doTest();
-    }
+	private void doTest() {
+		for (int i = 0; i < 100; i++)
+			broadCast("mess");
+	}
 
-    @OnClose
-    public void close(Session session) {
-	printOut( "Close session " + session.getId());
-	sessions.remove(session.getId());
-	usbController.closeUsbObject();
-	usbController.exit();
-    }
+	@OnOpen
+	public void open(Session session) {
+		printOut("Websocket session opened sessionId='" + session.getId()
+				+ "', instance='" + this.toString() + "'");
+		sessions.put(session.getId(), session);
+		broadCast("Server message : Connected");
+		broadCast(getServerInfo());
+		// doTest();
+	}
 
-    @OnError
-    public void onError(Throwable error) {
-	printOut("Error  " + error);
-    }
+	@OnClose
+	public void close(Session session) {
+		printOut("Close session " + session.getId());
+		sessions.remove(session.getId());
+		usbController.closeUsbObject();
+		usbController.exit();
+	}
 
-    @OnMessage
-    public void handleMessage(String message, Session session) {
-	printOut("Mess='" + message + "' Session='" + session.getId() + "'");
-	String[] parts = message.split(":");
-	int len = parts.length;
-	String cmd = (len >= 1) ? parts[0] : "";
-	String arg = (len > 1) ? parts[1] : "";
+	@OnError
+	public void onError(Throwable error) {
+		printOut("Error  " + error);
+	}
 
-	try {
-	    switch (cmd) {
-	    case USBCON_VENDOR_SWITCH_TO_ACCESSORY:
-		printOut("Preparing to connect to Vendor USB");
-		try {
-		    short tab3_vendorid = (short) 0x04e8; // Tab3,
-		    usbController.setupUsb(tab3_vendorid);
-		    int result = usbController.androidDeviceToAccessoryMode("CsohManufacturer", "CsohModel", "CsohDescription", "1.0", "http://www.mycompany.com", "SerialNumber");
-		} catch (Exception e) {
-		    broadCast(e.toString());
-		    System.out.println(e);
-		}
-		break;
-
-	    case USBCON_ACCESSORY:
-		printOut("Connect to usb accessory");
-		try {
-		    usbController.setupUsbForAndroid();
-		    Thread t = new Thread(usbController);
-		    t.start();
-		} catch (Exception e) {
-		    broadCast(e.toString());
-		    System.out.println(e);
-		    ;
-		}
-		break;
-
-	    case SEND_USB:
-		usbController.sendMessageToAndroid(arg);
-		break;
-	    case GET_SERVER_INFO :
+	@OnMessage
+	public void handleMessage(String message, Session session) {
+		printOut("Mess='" + message + "' Session='" + session.getId() + "'");
+		String[] parts = message.split(":");
+		int len = parts.length;
+		String cmd = (len >= 1) ? parts[0] : "";
+		String arg = (len > 1) ? parts[1] : "";
 		
-	    default:
-		printOut("Unrecognized command '" + message + "'");
-		break;
+		printOut("Parsed cmd : '" +cmd+ "'");
+		
 
-	    }
-	} catch (Exception e) {
-	    System.out.println(e);
-	    broadCast(e.toString());
+		try {
+			switch (cmd) {
+			case USBCON_VENDOR_SWITCH_TO_ACCESSORY:
+				printOut("Preparing to connect to Vendor USB");
+				try {
+					short tab3_vendorid = (short) 0x04e8; // Tab3,
+					usbController.setupUsb(tab3_vendorid);
+					int result = usbController.androidDeviceToAccessoryMode(
+							"CsohManufacturer", "CsohModel", "CsohDescription",
+							"1.0", "http://www.mycompany.com", "SerialNumber");
+				} catch (Exception e) {
+					broadCast(e.toString());
+					System.out.println(e);
+				}
+				break;
+
+			case USBCON_ACCESSORY:
+				printOut("Connect to usb accessory");
+				try {
+					usbController.setupUsbForAndroid();
+					Thread t = new Thread(usbController);
+					t.start();
+				} catch (Exception e) {
+					broadCast(e.toString());
+					System.out.println(e);
+					;
+				}
+				break;
+
+			case SEND_USB:
+				usbController.sendMessageToAndroid(arg);
+				break;
+			case GET_SERVER_INFO:
+				broadCast(getServerInfo());
+				break;
+
+			default:
+				printOut("Unrecognized command '" + message + "'");
+			//	broadCast("Unrecognized command '" + message + "'");
+				break;
+
+			}
+		} catch (Exception e) {
+			System.out.println(e);
+			broadCast(e.toString());
+
+		}
 
 	}
 
-    }
+	private void broadCast(String message) {
+		for (Session s : sessions.values()) {
 
-    private void broadCast(String message) {
-	for (Session s : sessions.values()) {
-
-	    try {
-		s.getBasicRemote().sendText(message);
-	    } catch (Exception e) {
-		printOut("Error broadcasting messages to ws clients");
-		System.out.println(e);
-	    }
+			try {
+				s.getBasicRemote().sendText(message);
+			} catch (Exception e) {
+				printOut("Error broadcasting messages to ws clients");
+				System.out.println(e);
+			}
+		}
 	}
-    }
 
-    public void startServer(String url, int port, String path) {
-	server = new Server(url, port, path, WebsocketServerEndpoint.class);
-	try {
-	    server.start();
-	} catch (DeploymentException e) {
-	    e.printStackTrace();
+	public void startServer(String url, int port, String path) {
+		server = new Server(url, port, path, WebsocketServerEndpoint.class);
+		try {
+			server.start();
+		} catch (DeploymentException e) {
+			e.printStackTrace();
+		}
 	}
-    }
 
-    public void stopServer() {
-	if (server != null)
-	    server.stop();
-    }
-    
-    private String getServerInfo(){
-	StringBuffer buf = new StringBuffer();
-	buf.append("Current sessions :\n");
-	for (Session s : sessions.values()) {
-	    buf.append("Session : " + s.getId() +"\n");
+	public void stopServer() {
+		if (server != null)
+			server.stop();
 	}
-	return buf.toString();
-    }
 
-    public static void main(String[] args) {
-	WebsocketServerEndpoint ws = new WebsocketServerEndpoint();
-	try {
-	    ws.startServer("localhost", 8025, "/websocket");
-	    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-	    ws.printOut("Please press a key to stop the server.\n");
-	    reader.readLine();
-	} catch (Exception e) {
-	    e.printStackTrace();
-	} finally {
-	    ws.stopServer();
+	private String getServerInfo() {
+		StringBuffer buf = new StringBuffer();
+		buf.append("Current sessions :\n");
+		for (Session s : sessions.values()) {
+			buf.append("Session : " + s.getId() + "\n");
+		}
+		return buf.toString();
 	}
-    }
 
-    @Override
-    public void onMessageFromUsb(String message) {
-	broadCast(message);
-    }
+	public static void main(String[] args) {
+		WebsocketServerEndpoint ws = new WebsocketServerEndpoint();
+		UsbTestLow.getInstance().addUsbMessageListener(ws);
+		try {
+			ws.startServer("localhost", 8025, "/websocket");
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					System.in));
+			ws.printOut("Please press a key to stop the server.\n");
+			reader.readLine();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			ws.stopServer();
+		}
+	}
 
-    private void printOut(String mess){
-	System.out.println(LOGPREFIX +  mess);
-    }
+	@Override
+	public void onMessageFromUsb(String message) {
+		broadCast(message);
+	}
+
+	private void printOut(String mess) {
+		System.out.println(LOGPREFIX + mess);
+	}
 }
