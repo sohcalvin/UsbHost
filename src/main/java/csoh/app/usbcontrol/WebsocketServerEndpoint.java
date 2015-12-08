@@ -1,11 +1,6 @@
 package csoh.app.usbcontrol;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.HashMap;
-
-import javax.websocket.DeploymentException;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
@@ -13,7 +8,7 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
-import org.glassfish.tyrus.server.Server;
+
 
 @ServerEndpoint("/usbhost")
 public class WebsocketServerEndpoint implements UsbMessageListener {
@@ -21,25 +16,22 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
     private static final String USBCON_ACCESSORY = "USBCON_ACCESSORY";
     private static final String SEND_USB = "SEND_USB";
     private static final String GET_SERVER_INFO = "GET_SERVER_INFO";
+    private static final String GET_CONNECTED_DEVICES = "GET_CONNECTED_DEVICES"; 
 
     private static final String LOGPREFIX = "WEBSOCKET >> ";
-    private Server server = null;
-
-    UsbTestLow usbController = UsbTestLow.getInstance();
+ 
+    UsbController usbController = UsbController.getInstance();
 
     private static HashMap<String, Session> sessions = new HashMap<String, Session>();
 
-    private void doTest() {
-	for (int i = 0; i < 100; i++)
-	    broadCast("mess");
-    }
-
     @OnOpen
     public void open(Session session) {
+    	usbController.addUsbMessageListener(this);
 	sessions.put(session.getId(), session);
-	broadCast("Websocket session connected sessionId='" + session.getId() + "'");
-	broadCast(getServerInfo());
-	// doTest();
+	broadCast("Websocket session connected sessionId='" + session.getId() + "'. Total sessions = " + sessions.size());
+	//broadCast(getServerInfo());
+	
+
     }
 
     @OnClose
@@ -57,18 +49,18 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 
     @OnMessage
     public void handleMessage(String message, Session session) {
-	printOut("Mess='" + message + "' Session='" + session.getId() + "'");
+	
 	String[] parts = message.split(":");
 	int len = parts.length;
 	String cmd = (len >= 1) ? parts[0] : "";
 	String arg = (len > 1) ? parts[1] : "";
 
-	printOut("Parsed cmd : '" + cmd + "'");
+	
 
 	try {
 	    switch (cmd) {
 	    case USBCON_VENDOR_SWITCH_TO_ACCESSORY:
-		printOut("Preparing to connect to Vendor USB");
+		
 		try {
 		    short tab3_vendorid = (short) 0x04e8; // Tab3,
 		    usbController.setupUsb(tab3_vendorid);
@@ -97,13 +89,16 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 		usbController.sendMessageToAndroid(arg);
 		broadCast(SEND_USB +"(" +arg+") - done.");
 		break;
+	    case GET_CONNECTED_DEVICES:
+	    	broadCast("GET_CONNECTED_DEVICES=" + usbController.listConnectedDevices());
+	    	break;
+	    	
 	    case GET_SERVER_INFO:
 		broadCast(getServerInfo());
 		break;
 
 	    default:
-		printOut("Unrecognized command '" + message + "'");
-		//	broadCast("Unrecognized command '" + message + "'");
+			broadCast("Unrecognized command '" + message + "'");
 		break;
 
 	    }
@@ -128,20 +123,6 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 	}
     }
 
-    public void startServer(String url, int port, String path) {
-	server = new Server(url, port, path, WebsocketServerEndpoint.class);
-	try {
-	    server.start();
-	} catch (DeploymentException e) {
-	    e.printStackTrace();
-	}
-    }
-
-    public void stopServer() {
-	if (server != null)
-	    server.stop();
-    }
-
     private String getServerInfo() {
 	StringBuffer buf = new StringBuffer();
 	buf.append("Current sessions : ");
@@ -149,21 +130,6 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 	    buf.append(s.getId() + ";");
 	}
 	return buf.toString();
-    }
-
-    public static void main(String[] args) {
-	WebsocketServerEndpoint ws = new WebsocketServerEndpoint();
-	UsbTestLow.getInstance().addUsbMessageListener(ws);
-	try {
-	    ws.startServer("localhost", 8025, "/websocket");
-	    BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-	    ws.printOut("Please press a key to stop the server.\n");
-	    reader.readLine();
-	} catch (Exception e) {
-	    e.printStackTrace();
-	} finally {
-	    ws.stopServer();
-	}
     }
 
     @Override

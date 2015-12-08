@@ -1,7 +1,7 @@
 var app = angular.module('SuperApp', []);
 app.constant("CONFIG", {
-	SERVER_ENDPOINT : "ws://berry:8025/websocket/usbhost",
-	XSERVER_ENDPOINT : "ws://localhost:8025/websocket/usbhost"
+	XSERVER_ENDPOINT : "ws://berry:8025/websocket/usbhost",
+	SERVER_ENDPOINT : "ws://localhost:8025/websocket/usbhost"
 		
 });
 

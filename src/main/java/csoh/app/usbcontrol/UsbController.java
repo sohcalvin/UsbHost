@@ -7,6 +7,7 @@ import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
@@ -15,7 +16,9 @@ import javax.usb.UsbConst;
 import javax.usb.UsbEndpoint;
 import javax.usb.UsbEndpointDescriptor;
 import javax.usb.UsbInterface;
+import javax.websocket.DeploymentException;
 
+import org.glassfish.tyrus.server.Server;
 import org.usb4java.BufferUtils;
 import org.usb4java.ConfigDescriptor;
 import org.usb4java.Context;
@@ -27,14 +30,12 @@ import org.usb4java.Interface;
 import org.usb4java.LibUsb;
 import org.usb4java.LibUsbException;
 
-public class UsbTestLow implements Runnable {
+public class UsbController implements Runnable {
 
 	private Context context = null;
 	private UsbObject currentUsb = null;
 
-	private final static byte REQUEST_TYPE_READ = (byte) 0xC0;// 1100 0000 ==
-	// USB_DIR_IN |
-	// USB_TYPE_VENDOR
+	private final static byte REQUEST_TYPE_READ = (byte) 0xC0;// 1100 0000 == USB_DIR_IN | USB_TYPE_VENDOR
 	private static short VENDOR_ID = (short) 0x04e8; // Tab3,
 	private static short PRODUCT_ID = (short) 0x6860; // Tab3,
 	private static short VENDOR_ID_GOOGLE = (short) 0x18D1; // google vendorid
@@ -42,20 +43,20 @@ public class UsbTestLow implements Runnable {
 	private static byte END_POINT_IN_GOOGLE = (byte) 0x81; // for interface == 1
 	private static byte END_POINT_OUT_GOOGLE = (byte) 0x02; // for interface ==
 
-	private static UsbTestLow instance = null;
+	private static UsbController instance = null;
 
-	public static UsbTestLow getInstance() {
+	public static UsbController getInstance() {
 		if (instance == null) {
-			synchronized (UsbTestLow.class) {
+			synchronized (UsbController.class) {
 				if (instance == null){
-					instance =  new UsbTestLow();
+					instance =  new UsbController();
 				}
 			}
 		}
 		return instance;
 	}
 
-	private UsbTestLow() {
+	private UsbController() {
 		init();
 	}
 
@@ -96,89 +97,20 @@ public class UsbTestLow implements Runnable {
 	// private static Device device;
 	// private static DeviceHandle handle;
 	//
+	
 	public static void main(String[] args) {
-
-		WebsocketServerEndpoint ws = new WebsocketServerEndpoint();
-		UsbTestLow utl = UsbTestLow.getInstance();
-		utl.addUsbMessageListener(ws);
-		utl.printOut("WS hashCode = " +ws.hashCode());
-		utl.printOut("UTL hashCode = " +utl.hashCode());
+		Server server = null;
 		try {
-
-			ws.startServer("localhost", 8025, "/websocket");
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					System.in));
+			server = new Server("localhost", 8025, "/websocket", WebsocketServerEndpoint.class);
+			server.start();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 			System.out.print("Please press a key to stop the server.\n");
 			reader.readLine();
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			ws.stopServer();
+			if (server != null)   server.stop();
 		}
-	}
-
-	public static void main2(String[] args) {
-
-		UsbTestLow usbControl = getInstance();
-		try {
-			/************** Switch Android device to Accessory mode *********/
-			boolean proceed = false;
-
-			try {
-
-				usbControl.setupUsb(VENDOR_ID);
-				// Switch android device to Accessory mode
-				int result = usbControl.androidDeviceToAccessoryMode(
-						"CsohManufacturer", "CsohModel", "CsohDescription",
-						"1.0", "http://www.mycompany.com", "SerialNumber");
-				System.out
-						.println("Finished switching android device to accessory mode");
-				System.out
-						.println("Please click ok on Android device then enter 'done' or 'cancel'");
-
-				Scanner sc = new Scanner(System.in);
-
-				while (true) {
-					String status = sc.next();
-					if (status.equalsIgnoreCase("done")) {
-						proceed = true;
-						break;
-					}
-					if (status.equalsIgnoreCase("cancel")) {
-						break;
-					}
-				}
-			} catch (DeviceNotFoundException dnfe) {
-				dnfe.printStackTrace();
-				proceed = true;
-			}
-			if (proceed) {
-				/************** Begin communication *********/
-				System.out.println("Begin communication");
-				usbControl.setupUsb(VENDOR_ID_GOOGLE);
-				Thread t = new Thread(usbControl);
-				t.start();
-				// transferBulkData(usbForCommunication.getHandle(),
-				// END_POINT_OUT_GOOGLE , "Hello how are you?", 100000);
-				// System.out.println("Transffered, Sleeping 1000 sec");
-				// Thread.sleep(1000000);
-				t.join();
-				usbControl.closeUsbObject();
-				System.out.println("Fin");
-			} else {
-				System.out.println("User abort complete");
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			usbControl.exit();
-		}
-	}
-
-	public void hello() {
-		System.out.println("Hellow");
-
 	}
 
 	public int androidDeviceToAccessoryMode(String vendor, String model,
@@ -312,10 +244,8 @@ public class UsbTestLow implements Runnable {
 	public void run() {
 		try {
 			while (true) {
-				System.out.println(">>Before readBulkData()");
 				notifyUsbMessageListeners("Waiting to readBulkData from device");
 				readBulkData(currentUsb.getHandle(), END_POINT_IN_GOOGLE, 32, 0);
-				System.out.println(">>>>>After readBulkData()");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -326,6 +256,20 @@ public class UsbTestLow implements Runnable {
 	
 	private void printOut(String mess){
 	    System.out.println("UsbTestLow:"+this.hashCode() + ">" + mess);
+	}
+	
+	public String listConnectedDevices(){
+		ArrayList<HashMap<String, Object>> list  = UsbObject.getConnectedDeviceProperties();
+		StringBuffer buf = new StringBuffer();
+		String[] keys = new String[]{UsbObject.PRODUCT, UsbObject.PRODUCT_ID, UsbObject.VENDOR_ID, UsbObject.MANUFACTURER, UsbObject.SERIAL_NUMBER};
+		for(HashMap<String, Object> d : list ){
+			buf.append("{ ");
+			for(String k : keys){
+				buf.append(k + " : " + d.get(k) + ", ");
+			}
+			buf.append(" }\n");
+		}
+		return buf.toString();
 	}
 
 }
