@@ -2,12 +2,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>csoh.reference</groupId>
-	<artifactId>usb4java</artifactId>
+	<groupId>csoh.app</groupId>
+	<artifactId>usbcontrol</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>usb4java</name>
+	<name>usbcontrol</name>
 	<url>http://maven.apache.org</url>
 
 	<properties>
@@ -70,7 +70,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>csoh.reference.usb4java.UsbTestLow</mainClass>
+							<mainClass>csoh.app.usbcontrol.UsbTestLow</mainClass>
 						</manifest>
 					</archive>
 				</configuration>

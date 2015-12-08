@@ -1,4 +1,4 @@
-package csoh.reference.usb4java;
+package csoh.app.usbcontrol;
 import java.io.IOException;
 import java.net.URI;
 

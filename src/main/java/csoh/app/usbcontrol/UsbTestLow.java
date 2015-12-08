@@ -1,4 +1,4 @@
-package csoh.reference.usb4java;
+package csoh.app.usbcontrol;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

@@ -1,4 +1,4 @@
-package csoh.reference.usb4java;
+package csoh.app.usbcontrol;
 
 public interface UsbMessageListener {
     void onMessageFromUsb(String message);

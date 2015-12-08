@@ -1,4 +1,4 @@
-package csoh.reference.usb4java;
+package csoh.app.usbcontrol;
 
 import org.usb4java.Device;
 import org.usb4java.DeviceDescriptor;

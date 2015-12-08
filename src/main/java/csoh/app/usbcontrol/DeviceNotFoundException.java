@@ -1,4 +1,4 @@
-package csoh.reference.usb4java;
+package csoh.app.usbcontrol;
 
 public class DeviceNotFoundException extends Exception {
     public DeviceNotFoundException() {
