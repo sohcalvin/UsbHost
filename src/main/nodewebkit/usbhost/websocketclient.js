@@ -14,7 +14,7 @@ app.factory("WebSocketClient", function(WS_READY_STATE,CONFIG) {
 
 			ws.onmessage = function(evt) {
 				var received_msg = evt.data;
-				superController.appendStatus("Recv : " + received_msg);
+				superController.appendStatus(received_msg);
 				superController.incrementCount();
 			};
 
