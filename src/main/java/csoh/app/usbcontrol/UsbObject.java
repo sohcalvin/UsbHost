@@ -1,7 +1,13 @@
 package csoh.app.usbcontrol;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Properties;
 
 import org.usb4java.Device;
 import org.usb4java.DeviceDescriptor;
@@ -19,6 +25,8 @@ public class UsbObject {
         return handle;
     }
     private static final short PRODUCT_ID_DONT_CARE = -1;
+    private static Properties usbIds = getUsbIds();
+    
     public UsbObject(short vendorId) throws DeviceNotFoundException {
 	this(vendorId,PRODUCT_ID_DONT_CARE );
     }
@@ -36,7 +44,18 @@ public class UsbObject {
 	
 	
     }
-
+    public void resetDevice(){
+	System.out.println(">>>>>>>>>>>>>>"  + handle + ">> "+ handle);
+	try{
+	LibUsb.resetDevice(handle);
+	}catch(Exception e){
+	    e.printStackTrace();
+	}finally{
+		System.out.println(">>>>>>>>Finished reset >> "+ handle);
+	
+	}
+	
+    }
     public void close() {
 	LibUsb.attachKernelDriver(handle, interfaceNum);
 	LibUsb.releaseInterface(handle, interfaceNum);
@@ -94,6 +113,7 @@ public class UsbObject {
     public static String MANUFACTURER  = "MANUFACTURER";
     public static String PRODUCT	= "PRODUCT";
     public static String SERIAL_NUMBER = "SERIAL_NUMBER";
+    public static String DUMP = "DUMP";
     public static ArrayList<HashMap<String, Object>> getConnectedDeviceProperties() {
     	// Read the USB device list
     	DeviceList list = new DeviceList();
@@ -111,6 +131,7 @@ public class UsbObject {
 	    		prop.put(MANUFACTURER, descriptor.iManufacturer());
 	    		prop.put(PRODUCT, descriptor.iProduct());
 	    		prop.put(SERIAL_NUMBER, descriptor.iSerialNumber());
+	    		prop.put(DUMP, descriptor.dump());
 	    		aList.add(prop);
     	    }
     		
@@ -122,4 +143,40 @@ public class UsbObject {
     	return aList;
         }
     
+    public static Properties getUsbIds() {
+	Properties prop = new Properties();
+    	InputStream input = null;
+    	String filename = "usb.ids.properties";
+    	try {
+    		input = UsbObject.class.getClassLoader().getResourceAsStream(filename);
+    		if(input!=null){
+    		    BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+    		    String aline = null;
+    		    while((aline = reader.readLine()) != null){
+    			System.out.println(aline);
+    			if(aline.startsWith("#") ) continue;
+    			
+    			
+    		    }
+    		}
+    		prop.load(input);
+     
+    	} catch (IOException ex) {
+    	    ex.printStackTrace();
+        } finally{
+        	if(input!=null){
+        		try {
+				input.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+        	}
+        }
+        return prop;
+    }
+    
+    public static void main(String[] args) {
+	
+	UsbObject.getUsbIds();
+    }
 }

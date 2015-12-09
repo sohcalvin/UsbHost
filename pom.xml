@@ -70,7 +70,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>csoh.app.usbcontrol.UsbTestLow</mainClass>
+							<mainClass>csoh.app.usbcontrol.UsbController</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
