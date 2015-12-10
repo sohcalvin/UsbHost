@@ -12,7 +12,7 @@ public class ResourceManager {
 
 	private static ResourceManager instance = null;
 	private static final int VENDOR_NAME_KEY = -99;
-
+	
 	public static ResourceManager getInstance() {
 		if (instance == null) {
 			synchronized (ResourceManager.class) {
@@ -59,10 +59,9 @@ public class ResourceManager {
 				while ((aline = reader.readLine()) != null) {
 					if (aline.startsWith("#") || aline.equals(""))
 						continue;
-					if (! aline.startsWith("\t")) {
+					if (! aline.startsWith("\t")) { // VendorID lines that doesn't start with tab
 						String[] parts = aline.split("\\s+", 2);
-						if (parts.length != 2)
-							continue;
+						if (parts.length != 2)	continue;
 						String sVendorId = parts[0];
 						String sVendorName = parts[1];
 						HashMap<Integer, String> prodIdToVendorName = new HashMap<Integer, String>();
@@ -76,16 +75,18 @@ public class ResourceManager {
 							currentProdIdToVendorName = null;
 						}
 					}else{
-						if (aline.startsWith("\t\t")) continue;
-						String productLine = aline.trim();
-						String[] parts = productLine.split("\\s+", 2);
-						String sProductId = parts[0];
-						String sProductName = parts[1];
-						if(currentProdIdToVendorName != null){
-							try {
-								int productId = Integer.valueOf(sProductId, 16);
-								currentProdIdToVendorName.put(productId, sProductName);
-							} catch (Exception e) {
+						
+						if (aline.matches("^\\t[^\\t].*")){ // ProductID lines that starts with a single tab
+							String productLine = aline.trim();
+							String[] parts = productLine.split("\\s+", 2);
+							String sProductId = parts[0];
+							String sProductName = parts[1];
+							if(currentProdIdToVendorName != null){
+								try {
+									int productId = Integer.valueOf(sProductId, 16);
+									currentProdIdToVendorName.put(productId, sProductName);
+								} catch (Exception e) {
+								}
 							}
 						}
 					} 
@@ -104,10 +105,11 @@ public class ResourceManager {
 		}
 		return prop;
 	}
-
+	
 	public static void main(String[] args) {
 		System.out.println(ResourceManager.getInstance().getVendorName(0x18D1));
 		System.out.println(ResourceManager.getInstance().getProductName(0x18D1, 0x2D01));
+		System.out.println(ResourceManager.getInstance().getVendorName(0x04e8));
 	}
 
 }

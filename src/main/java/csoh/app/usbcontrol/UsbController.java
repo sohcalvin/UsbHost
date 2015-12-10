@@ -59,6 +59,7 @@ public class UsbController implements Runnable {
     private UsbController() {
 	init();
     }
+    
 
     public void setupUsb(short vendor_id, short product_id) throws DeviceNotFoundException {
 	currentUsb = new UsbObject(vendor_id, product_id);
