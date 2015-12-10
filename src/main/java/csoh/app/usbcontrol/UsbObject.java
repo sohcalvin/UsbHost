@@ -25,7 +25,7 @@ public class UsbObject {
         return handle;
     }
     private static final short PRODUCT_ID_DONT_CARE = -1;
-    private static Properties usbIds = getUsbIds();
+ 
     
     public UsbObject(short vendorId) throws DeviceNotFoundException {
 	this(vendorId,PRODUCT_ID_DONT_CARE );
@@ -143,40 +143,7 @@ public class UsbObject {
     	return aList;
         }
     
-    public static Properties getUsbIds() {
-	Properties prop = new Properties();
-    	InputStream input = null;
-    	String filename = "usb.ids.properties";
-    	try {
-    		input = UsbObject.class.getClassLoader().getResourceAsStream(filename);
-    		if(input!=null){
-    		    BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
-    		    String aline = null;
-    		    while((aline = reader.readLine()) != null){
-    			System.out.println(aline);
-    			if(aline.startsWith("#") ) continue;
-    			
-    			
-    		    }
-    		}
-    		prop.load(input);
-     
-    	} catch (IOException ex) {
-    	    ex.printStackTrace();
-        } finally{
-        	if(input!=null){
-        		try {
-				input.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-        	}
-        }
-        return prop;
-    }
+
     
-    public static void main(String[] args) {
-	
-	UsbObject.getUsbIds();
-    }
+
 }
