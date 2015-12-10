@@ -30,6 +30,9 @@ import org.usb4java.Interface;
 import org.usb4java.LibUsb;
 import org.usb4java.LibUsbException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class UsbController implements Runnable {
 
     private Context context = null;
@@ -249,17 +252,29 @@ public class UsbController implements Runnable {
     }
 
     public String listConnectedDevices() {
-	ArrayList<HashMap<String, Object>> list = UsbObject.getConnectedDeviceProperties();
-	StringBuffer buf = new StringBuffer();
-	String[] keys = new String[] { UsbObject.PRODUCT, UsbObject.PRODUCT_ID, UsbObject.VENDOR_ID, UsbObject.MANUFACTURER, UsbObject.SERIAL_NUMBER ,UsbObject.DUMP};
-	for (HashMap<String, Object> d : list) {
-	    buf.append("{ ");
-	    for (String k : keys) {
-		buf.append(k + " : " + d.get(k) + ", ");
-	    }
-	    buf.append(" }\n");
+	ArrayList<HashMap<UsbObject.DESCRIPTOR_FIELD, Object>> list = UsbObject.getConnectedDeviceProperties();
+//	StringBuffer buf = new StringBuffer();
+//	UsbObject.DESCRIPTOR_FIELD[] keys = UsbObject.DESCRIPTOR_FIELD.values();
+//		
+//	for (HashMap<UsbObject.DESCRIPTOR_FIELD, Object> d : list) {
+//	    buf.append("{ ");
+//	    for (UsbObject.DESCRIPTOR_FIELD k : keys) {
+//	    	
+//		buf.append(k + " : " + d.get(k) + ", ");
+//	    }
+//	    buf.append(" }\n");
+//	}
+//	return buf.toString();
+
+    
+    ObjectMapper mapper = new ObjectMapper();
+    String json = null;
+	try {
+		json = mapper.writeValueAsString(list);
+	} catch (JsonProcessingException e) {
+		e.printStackTrace();
 	}
-	return buf.toString();
-    }
+     return json;
+    }    
 
 }

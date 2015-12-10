@@ -107,31 +107,36 @@ public class UsbObject {
 	// Device not found
 	return null;
     }
-
-    public static String PRODUCT_ID = "PRODUCT_ID";
-    public static String VENDOR_ID = "VENDOR_ID";
-    public static String MANUFACTURER  = "MANUFACTURER";
-    public static String PRODUCT	= "PRODUCT";
-    public static String SERIAL_NUMBER = "SERIAL_NUMBER";
-    public static String DUMP = "DUMP";
-    public static ArrayList<HashMap<String, Object>> getConnectedDeviceProperties() {
+    
+	public enum DESCRIPTOR_FIELD {
+		PRODUCT_ID,
+		VENDOR_ID,
+		MANUFACTURER,
+		PRODUCT,
+		SERIAL_NUMBER,
+		DUMP
+	}
+	
+	
+    public static ArrayList<HashMap<DESCRIPTOR_FIELD, Object>> getConnectedDeviceProperties() {
+    	
     	// Read the USB device list
     	DeviceList list = new DeviceList();
     	int result = LibUsb.getDeviceList(null, list);
     	if (result < 0) throw new LibUsbException("Unable to get device list", result);
-    	ArrayList<HashMap<String, Object>> aList = new ArrayList<HashMap<String, Object>>();
+    	ArrayList<HashMap<DESCRIPTOR_FIELD, Object>> aList = new ArrayList<HashMap<DESCRIPTOR_FIELD, Object>>();
     	try {
     	    for (Device device : list) {
 	    		DeviceDescriptor descriptor = new DeviceDescriptor();
 	    		result = LibUsb.getDeviceDescriptor(device, descriptor);
 	    		if (result != LibUsb.SUCCESS)    throw new LibUsbException("Unable to read device descriptor", result);
-	    		HashMap<String, Object> prop = new HashMap<String, Object>();
-	    		prop.put(PRODUCT_ID, descriptor.idProduct());
-	    		prop.put(VENDOR_ID, descriptor.idVendor());
-	    		prop.put(MANUFACTURER, descriptor.iManufacturer());
-	    		prop.put(PRODUCT, descriptor.iProduct());
-	    		prop.put(SERIAL_NUMBER, descriptor.iSerialNumber());
-	    		prop.put(DUMP, descriptor.dump());
+	    		HashMap<DESCRIPTOR_FIELD, Object> prop = new HashMap<DESCRIPTOR_FIELD, Object>();
+	    		prop.put(DESCRIPTOR_FIELD.PRODUCT_ID, descriptor.idProduct());
+	    		prop.put(DESCRIPTOR_FIELD.VENDOR_ID, descriptor.idVendor());
+	    		prop.put(DESCRIPTOR_FIELD.MANUFACTURER, descriptor.iManufacturer());
+	    		prop.put(DESCRIPTOR_FIELD.PRODUCT, descriptor.iProduct());
+	    		prop.put(DESCRIPTOR_FIELD.SERIAL_NUMBER, descriptor.iSerialNumber());
+	    		prop.put(DESCRIPTOR_FIELD.DUMP, descriptor.dump());
 	    		aList.add(prop);
     	    }
     		
@@ -143,7 +148,7 @@ public class UsbObject {
     	return aList;
         }
     
-
+    
     
 
 }
