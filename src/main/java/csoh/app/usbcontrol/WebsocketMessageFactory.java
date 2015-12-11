@@ -44,4 +44,8 @@ public class WebsocketMessageFactory {
 		
 	}
 	
+	public String messageToJson(String mess){
+		   return "{\"" + PROPERTY_ID + "\" : \"MESS\", \""+PROPERTY_DATA+"\" : \"" + mess + "\" }";  
+	}
+	
 }

@@ -132,7 +132,8 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 
     @Override
     public void onMessageFromUsb(String message) {
-	broadCast(message);
+    	String jsonString = WebsocketMessageFactory.getInstance().messageToJson(message);
+    	broadCast(jsonString);
     }
 
     private void printOut(String mess) {

@@ -31,16 +31,20 @@ app.controller('SuperController', function($scope, WebSocketClient,COMMAND) {
 	};
 	$scope.onMessage = function(message){
 		var data = JSON.parse(message);
-		if(data.ID === "DEVICE_LIST"){
-			$scope.usbDevices = [];
-			for(var i in data.DATA){
-				var arec = data.DATA[i];
-				$scope.usbDevices.push(arec);
-			}
-			$scope.$apply();
-			
+		switch( data.ID ){
+			case "DEVICE_LIST" :
+				$scope.usbDevices = [];
+				for(var i in data.DATA){
+					var arec = data.DATA[i];
+					$scope.usbDevices.push(arec);
+				}
+				break;
+			case "MESS" : 
+				$scope.appendStatus(data.DATA);
+			default :
+					break;
 		}
-		
+		$scope.$apply();
 		
 		
 	};
