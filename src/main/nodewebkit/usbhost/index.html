@@ -53,6 +53,13 @@ img.no-resize {
 		<div class="panel panel-default padTop padBottom">
 			<div class="container">
 				<div class="row">
+					
+						<label class="col-md-2">Select list:</label> 
+						<select	class=" col-md-10" id="usbSelect">
+								<option ng-repeat="option in usbDevices" value="{{option.VENDOR_ID }}">{{option.VENDOR_NAME +"-"+ option.PRODUCT_NAME}}</option>
+						</select>
+				</div>
+				<div class="row">
 					<button type="button" class="btn btn-primary col-md-2" ng-click="sendSwitchToAccessory()">To Accessory Mode</button>
 					<label class="col-md-5" for="status">Connect to Vendor USB device and switch to Accessory mode</label> <img src="./images/usb_disconnect.png" class="img-rounded col-md-5 no-resize">
 				</div>

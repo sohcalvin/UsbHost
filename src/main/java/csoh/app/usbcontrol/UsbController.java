@@ -32,6 +32,7 @@ import org.usb4java.LibUsbException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 public class UsbController implements Runnable {
 
@@ -252,29 +253,9 @@ public class UsbController implements Runnable {
     }
 
     public String listConnectedDevices() {
-	ArrayList<HashMap<UsbObject.DESCRIPTOR_FIELD, Object>> list = UsbObject.getConnectedDeviceProperties();
-//	StringBuffer buf = new StringBuffer();
-//	UsbObject.DESCRIPTOR_FIELD[] keys = UsbObject.DESCRIPTOR_FIELD.values();
-//		
-//	for (HashMap<UsbObject.DESCRIPTOR_FIELD, Object> d : list) {
-//	    buf.append("{ ");
-//	    for (UsbObject.DESCRIPTOR_FIELD k : keys) {
-//	    	
-//		buf.append(k + " : " + d.get(k) + ", ");
-//	    }
-//	    buf.append(" }\n");
-//	}
-//	return buf.toString();
-
+    	ArrayList<HashMap<UsbObject.DESCRIPTOR_FIELD, Object>> list = UsbObject.getConnectedDeviceProperties(false);
+    	return WebsocketMessageFactory.getInstance().deviceListToJson(list);
     
-    ObjectMapper mapper = new ObjectMapper();
-    String json = null;
-	try {
-		json = mapper.writeValueAsString(list);
-	} catch (JsonProcessingException e) {
-		e.printStackTrace();
-	}
-     return json;
     }    
 
 }

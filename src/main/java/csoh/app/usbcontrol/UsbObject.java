@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Properties;
 
@@ -111,6 +112,8 @@ public class UsbObject {
 	public enum DESCRIPTOR_FIELD {
 		PRODUCT_ID,
 		VENDOR_ID,
+		PRODUCT_NAME,
+		VENDOR_NAME,
 		MANUFACTURER,
 		PRODUCT,
 		SERIAL_NUMBER,
@@ -118,7 +121,7 @@ public class UsbObject {
 	}
 	
 	
-    public static ArrayList<HashMap<DESCRIPTOR_FIELD, Object>> getConnectedDeviceProperties() {
+    public static ArrayList<HashMap<DESCRIPTOR_FIELD, Object>> getConnectedDeviceProperties(boolean includeDump) {
     	
     	// Read the USB device list
     	DeviceList list = new DeviceList();
@@ -131,12 +134,27 @@ public class UsbObject {
 	    		result = LibUsb.getDeviceDescriptor(device, descriptor);
 	    		if (result != LibUsb.SUCCESS)    throw new LibUsbException("Unable to read device descriptor", result);
 	    		HashMap<DESCRIPTOR_FIELD, Object> prop = new HashMap<DESCRIPTOR_FIELD, Object>();
-	    		prop.put(DESCRIPTOR_FIELD.PRODUCT_ID, descriptor.idProduct());
-	    		prop.put(DESCRIPTOR_FIELD.VENDOR_ID, descriptor.idVendor());
+	    		short vendorId = descriptor.idVendor();
+	    		short productId = descriptor.idProduct();
+	    		String vendorName = ResourceManager.getInstance().getVendorName(vendorId);
+	    		String productName = ResourceManager.getInstance().getProductName(vendorId, productId);
+	    		if(productName == null) {
+	    			int lenFromRight = 4;
+	    			String hexProductId = Integer.toHexString(productId);
+	    			int len = hexProductId.length();
+	    			if(len > lenFromRight ) hexProductId = hexProductId.substring(0,len - lenFromRight );
+	    			productName = "null (" + hexProductId + ")";
+	    		}
+	    				
+	    		prop.put(DESCRIPTOR_FIELD.PRODUCT_ID, productId);
+	    		prop.put(DESCRIPTOR_FIELD.VENDOR_ID, vendorId);
+	    		prop.put(DESCRIPTOR_FIELD.VENDOR_NAME, vendorName);
+	    		prop.put(DESCRIPTOR_FIELD.PRODUCT_NAME, productName);
+	    		
 	    		prop.put(DESCRIPTOR_FIELD.MANUFACTURER, descriptor.iManufacturer());
 	    		prop.put(DESCRIPTOR_FIELD.PRODUCT, descriptor.iProduct());
 	    		prop.put(DESCRIPTOR_FIELD.SERIAL_NUMBER, descriptor.iSerialNumber());
-	    		prop.put(DESCRIPTOR_FIELD.DUMP, descriptor.dump());
+	    		if(includeDump) prop.put(DESCRIPTOR_FIELD.DUMP, descriptor.dump());
 	    		aList.add(prop);
     	    }
     		

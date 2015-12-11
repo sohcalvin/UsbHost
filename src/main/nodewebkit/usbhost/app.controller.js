@@ -2,6 +2,7 @@ app.controller('SuperController', function($scope, WebSocketClient,COMMAND) {
 	WebSocketClient.init($scope);
 	$scope.status = "";
 	$scope.count = 1;
+	$scope.usbDevices = [];
 	$scope.message = "";
 	$scope.setCount = function(cnt) {
 		$scope.count = cnt;
@@ -27,6 +28,21 @@ app.controller('SuperController', function($scope, WebSocketClient,COMMAND) {
 	};
 	$scope.ping = function(arg) {
 		WebSocketClient.sendMessage(COMMAND.PING +":" + arg);
+	};
+	$scope.onMessage = function(message){
+		var data = JSON.parse(message);
+		if(data.ID === "DEVICE_LIST"){
+			$scope.usbDevices = [];
+			for(var i in data.DATA){
+				var arec = data.DATA[i];
+				$scope.usbDevices.push(arec);
+			}
+			$scope.$apply();
+			
+		}
+		
+		
+		
 	};
 
 });

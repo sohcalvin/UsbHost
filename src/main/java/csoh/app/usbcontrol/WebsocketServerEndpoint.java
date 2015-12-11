@@ -27,7 +27,8 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
     public void open(Session session) {
 	usbController.addUsbMessageListener(this);
 	sessions.put(session.getId(), session);
-	broadCast("Websocket session connected sessionId='" + session.getId() + "'. Total sessions = " + sessions.size());
+	broadCast(usbController.listConnectedDevices());
+	//broadCast("Websocket session connected sessionId='" + session.getId() + "'. Total sessions = " + sessions.size());
     }
 
     @OnClose
@@ -112,7 +113,7 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 
 	    try {
 		printOut("broadCast - '" + message + "' to " + s.getId());
-		s.getBasicRemote().sendText("WS: " + message);
+		s.getBasicRemote().sendText(message);
 	    } catch (Exception e) {
 		printOut("Error broadcasting messages to ws clients");
 		System.out.println(e);
