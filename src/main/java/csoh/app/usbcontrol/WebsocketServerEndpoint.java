@@ -20,6 +20,7 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
     private static final String LOGPREFIX = "WEBSOCKET >> ";
 
     UsbController usbController = UsbController.getInstance();
+    WebsocketMessageFactory wsFactory = WebsocketMessageFactory.getInstance();
 
     private static HashMap<String, Session> sessions = new HashMap<String, Session>();
 
@@ -28,7 +29,7 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 	usbController.addUsbMessageListener(this);
 	sessions.put(session.getId(), session);
 	broadCast(usbController.listConnectedDevices());
-	//broadCast("Websocket session connected sessionId='" + session.getId() + "'. Total sessions = " + sessions.size());
+	broadCast(wsFactory.messageToJson("Websocket session connected sessionId='" + session.getId() + "'. Total sessions = " + sessions.size()));
     }
 
     @OnClose
@@ -59,10 +60,10 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 		    short tab3_vendorid = (short) 0x04e8; // Tab3,
 		    usbController.setupUsb(tab3_vendorid);
 		    int result = usbController.androidDeviceToAccessoryMode("CsohManufacturer", "CsohModel", "CsohDescription", "1.0", "http://www.mycompany.com", "SerialNumber");
-		    broadCast(USBCON_VENDOR_SWITCH_TO_ACCESSORY + " - done.");
-		    broadCast("Please open Android application on device");
+		    broadCastInJson(USBCON_VENDOR_SWITCH_TO_ACCESSORY + " - done.");
+		    broadCastInJson("Please open Android application on device");
 		} catch (Exception e) {
-		    broadCast(e.toString());
+			broadCastInJson(e.toString());
 		    System.out.println(e);
 		}
 		break;
@@ -70,11 +71,11 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 	    case USBCON_ACCESSORY:
 		try {
 		    usbController.setupUsbForAndroid();
-		    broadCast(USBCON_ACCESSORY + " - done.");
+		    broadCastInJson(USBCON_ACCESSORY + " - done.");
 		    Thread t = new Thread(usbController);
 		    t.start();
 		} catch (Exception e) {
-		    broadCast(e.toString());
+			broadCastInJson(e.toString());
 		    System.out.println(e);
 		}
 		break;
@@ -108,11 +109,19 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 
     }
 
-    private void broadCast(String message) {
+    private void broadCastInJson(String message){
+    	broadCast(message, true);
+    }
+    private void broadCast(String message){
+    	broadCast(message, false);
+    }
+    private void broadCast(String message, boolean convertToJson) {
+    	if(convertToJson){
+    		message =  wsFactory.messageToJson(message);
+    	}
 	for (Session s : sessions.values()) {
-
 	    try {
-		printOut("broadCast - '" + message + "' to " + s.getId());
+		//printOut("broadCast - '" + message + "' to " + s.getId());
 		s.getBasicRemote().sendText(message);
 	    } catch (Exception e) {
 		printOut("Error broadcasting messages to ws clients");
@@ -132,8 +141,7 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 
     @Override
     public void onMessageFromUsb(String message) {
-    	String jsonString = WebsocketMessageFactory.getInstance().messageToJson(message);
-    	broadCast(jsonString);
+    		broadCastInJson(message);
     }
 
     private void printOut(String mess) {

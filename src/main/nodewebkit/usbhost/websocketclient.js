@@ -9,7 +9,7 @@ app.factory("WebSocketClient", function(WS_READY_STATE,CONFIG) {
 			var ws = new WebSocket(CONFIG.SERVER_ENDPOINT);
 			this.ws = ws;
 			ws.onopen = function() {
-				superController.appendStatus("Websocket connected");
+				//superController.appendStatus("Client side open");
 			};
 
 			ws.onmessage = function(evt) {
