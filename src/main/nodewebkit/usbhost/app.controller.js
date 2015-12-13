@@ -1,4 +1,4 @@
-app.controller('SuperController', function($scope, WebSocketClient,COMMAND) {
+app.controller('SuperController', function($scope, WebSocketClient,COMMAND,PAYLOAD_KEY) {
 	WebSocketClient.init($scope);
 	$scope.status = "";
 	$scope.count = 1;
@@ -14,24 +14,41 @@ app.controller('SuperController', function($scope, WebSocketClient,COMMAND) {
 	$scope.appendStatus = function(message) {
 		$scope.status += message + "\n";
 		$scope.$apply();
-		//var textarea = document.getElementById('comment');
-		//textarea.scrollTop = textarea.scrollHeight;
 	};
-	$scope.sendMessage = function() {
-		WebSocketClient.sendMessage(COMMAND.SEND_USB + ":" +$scope.message);
+	$scope.sendMessage = function(){
+		var payload = {};
+		payload[PAYLOAD_KEY.TYPE] = "MESS";
+		payload[PAYLOAD_KEY.DATA] = COMMAND.SEND_USB + ":"+$scope.message;
+		WebSocketClient.sendMessage( JSON.stringify(payload));
+		//WebSocketClient.sendMessage(COMMAND.SEND_USB + ":" +$scope.message);
+	};
+	$scope._sendCommand = function(cmdData){
+		var payload = {};
+		payload[PAYLOAD_KEY.TYPE] = "CMD";
+		payload[PAYLOAD_KEY.DATA] = cmdData;
+		WebSocketClient.sendMessage(JSON.stringify(payload));
 	};
 	$scope.sendSwitchToAccessory = function() {
-		WebSocketClient.sendMessage(COMMAND.USBCON_VENDOR_SWITCH_TO_ACCESSORY);
+		$scope._sendCommand(COMMAND.USBCON_VENDOR_SWITCH_TO_ACCESSORY);
+		
 	};
 	$scope.sendConnectAndroidUSB = function() {
-		WebSocketClient.sendMessage(COMMAND.USBCON_ACCESSORY);
+		$scope._sendCommand(COMMAND.USBCON_ACCESSORY);
+		
 	};
 	$scope.ping = function(arg) {
-		WebSocketClient.sendMessage(COMMAND.PING +":" + arg);
+		$scope._sendCommand(COMMAND.PING +":" + arg)
 	};
+	
 	$scope.onMessage = function(message){
-		var data = JSON.parse(message);
-		switch( data.ID ){
+		var data = undefined;
+		try{
+			data = JSON.parse(message);
+		}catch(err){
+			data ={"TYPE":"MESS", "DATA": message};
+		}
+
+		switch( data.TYPE ){
 			case "DEVICE_LIST" :
 				$scope.usbDevices = [];
 				for(var i in data.DATA){

@@ -18,6 +18,10 @@ app.constant("COMMAND",{
 	PING : "PING"
 	
 });
+app.constant("PAYLOAD_KEY",{
+	TYPE : "TYPE",
+	DATA : "DATA"
+});
 app.directive('scrollToBottomOnUpdate', function() {
 	  return {
 	    restrict: 'A', //E = element, A = attribute, C = class, M = comment

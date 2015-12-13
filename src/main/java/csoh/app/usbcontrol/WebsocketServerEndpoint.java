@@ -47,6 +47,7 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 
     @OnMessage
     public void handleMessage(String message, Session session) {
+	
 	String[] parts = message.split(":");
 	int len = parts.length;
 	String cmd = (len >= 1) ? parts[0] : "";
