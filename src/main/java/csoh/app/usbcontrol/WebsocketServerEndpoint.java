@@ -9,6 +9,8 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import csoh.app.usbcontrol.WebsocketMessageFactory.Payload;
 import csoh.app.usbcontrol.WebsocketMessageFactory.UsbOperation;
 
@@ -19,7 +21,7 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
     private static final String SEND_USB = "SEND_USB";
     private static final String GET_SERVER_INFO = "GET_SERVER_INFO";
     private static final String GET_CONNECTED_DEVICES = "GET_CONNECTED_DEVICES";
-    private static final String PING= "PING";
+    private static final String PING = "PING";
 
     private static final String LOGPREFIX = "WEBSOCKET >> ";
 
@@ -51,68 +53,68 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 
     @OnMessage
     public void handleMessage(String message, Session session) {
-    	
-    
-	
-	String[] parts = message.split(":");
-	int len = parts.length;
-	String cmd = (len >= 1) ? parts[0] : "";
-	String arg = (len > 1) ? parts[1] : "";
 
 	try {
-		Payload<UsbOperation> p = wsFactory.jsonToPayloadOperation(message);
-		UsbOperation uo = p.getData();
-		String oper = uo.getOperationName();
-
-		switch (oper) {
-	    case USBCON_VENDOR_SWITCH_TO_ACCESSORY:
-
-		try {
-		    short tab3_vendorid = (short) 0x04e8; // Tab3,
-		    short test = uo.getVendorId();
-		    
-		    usbController.setupUsb(tab3_vendorid);
-		    int result = usbController.androidDeviceToAccessoryMode("CsohManufacturer", "CsohModel", "CsohDescription", "1.0", "http://www.mycompany.com", "SerialNumber");
-		    broadCastInJson(USBCON_VENDOR_SWITCH_TO_ACCESSORY + " - done.");
-		    broadCastInJson("Please open Android application on device");
-		} catch (Exception e) {
-			broadCastInJson(e.toString());
-		    System.out.println(e);
-		}
-		break;
-
-	    case USBCON_ACCESSORY:
-		try {
-		    usbController.setupUsbForAndroid();
-		    broadCastInJson(USBCON_ACCESSORY + " - done.");
-		    Thread t = new Thread(usbController);
-		    t.start();
-		} catch (Exception e) {
-			broadCastInJson(e.toString());
-		    System.out.println(e);
-		}
-		break;
-
-	    case SEND_USB:
-		usbController.sendMessageToAndroid(arg);
-		broadCast(SEND_USB + "(" + arg + ") - done.");
-		break;
-	    case GET_CONNECTED_DEVICES:
-		broadCast("GET_CONNECTED_DEVICES=" + usbController.listConnectedDevices());
-		break;
-	    case PING:
-		broadCast(usbController.listConnectedDevices());
+	    JsonNode node = wsFactory.toJsonNode(message);
+	    System.out.println(node);
+	    
+	    if (wsFactory.isUsbCommand(node)) {
+		Payload<UsbOperation> p = wsFactory.toPayloadUsbOperation(node);
+		UsbOperation usbOper = p.getData();
+		String oper = usbOper.getOperationName();
 		
-		broadCast("After PING");
-		break;
-	    case GET_SERVER_INFO:
-		broadCast(getServerInfo());
-		break;
+		switch (oper) {
+		case USBCON_VENDOR_SWITCH_TO_ACCESSORY:
 
-	    default:
-		broadCast("Unrecognized command '" + message + "'");
-		break;
+		    try {
+			short tab3_vendorid = (short) 0x04e8; // Tab3,
+			short vendorid = usbOper.getVendorId();
+			System.out.println(">>>>>>>>>" + vendorid);
+			usbController.setupUsb(vendorid);
+			//usbController.setupUsb(tab3_vendorid);
+			int result = usbController.androidDeviceToAccessoryMode("CsohManufacturer", "CsohModel", "CsohDescription", "1.0", "http://www.mycompany.com", "SerialNumber");
+			broadCastInJson(USBCON_VENDOR_SWITCH_TO_ACCESSORY + " - done.");
+			broadCastInJson("Please open Android application on device");
+		    } catch (Exception e) {
+			broadCastInJson(e.toString());
+			System.out.println(e);
+		    }
+		    break;
 
+		case USBCON_ACCESSORY:
+		    try {
+			usbController.setupUsbForAndroid();
+			broadCastInJson(USBCON_ACCESSORY + " - done.");
+			Thread t = new Thread(usbController);
+			t.start();
+		    } catch (Exception e) {
+			broadCastInJson(e.toString());
+			System.out.println(e);
+		    }
+		    break;
+
+		case SEND_USB:
+		    String arg = usbOper.getMessage();
+		    usbController.sendMessageToAndroid(arg);
+		    broadCast(SEND_USB + "(" + arg + ") - done.");
+		    break;
+		case GET_CONNECTED_DEVICES:
+		    broadCast("GET_CONNECTED_DEVICES=" + usbController.listConnectedDevices());
+		    break;
+		case PING:
+		    broadCast(usbController.listConnectedDevices());
+
+		    broadCast("After PING");
+		    break;
+		case GET_SERVER_INFO:
+		    broadCast(getServerInfo());
+		    break;
+
+		default:
+		    broadCast("Unrecognized command '" + message + "'");
+		    break;
+
+		}
 	    }
 	} catch (Exception e) {
 	    System.out.println(e);
@@ -122,19 +124,21 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 
     }
 
-    private void broadCastInJson(String message){
-    	broadCast(message, true);
+    private void broadCastInJson(String message) {
+	broadCast(message, true);
     }
-    private void broadCast(String message){
-    	broadCast(message, false);
+
+    private void broadCast(String message) {
+	broadCast(message, false);
     }
+
     private void broadCast(String message, boolean convertToJson) {
-    	if(convertToJson){
-    		message =  wsFactory.messageToJson(message);
-    	}
+	if (convertToJson) {
+	    message = wsFactory.messageToJson(message);
+	}
 	for (Session s : sessions.values()) {
 	    try {
-		//printOut("broadCast - '" + message + "' to " + s.getId());
+		//printOut("broadCast>>'" + message + "' to " + s.getId());
 		s.getBasicRemote().sendText(message);
 	    } catch (Exception e) {
 		printOut("Error broadcasting messages to ws clients");
@@ -154,7 +158,7 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 
     @Override
     public void onMessageFromUsb(String message) {
-    		broadCastInJson(message);
+	broadCastInJson(message);
     }
 
     private void printOut(String mess) {

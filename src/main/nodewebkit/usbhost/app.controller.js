@@ -3,6 +3,7 @@ app.controller('SuperController', function($scope, WebSocketClient,COMMAND,PAYLO
 	$scope.status = "";
 	$scope.count = 1;
 	$scope.usbDevices = [];
+	$scope.selectedUsbDevice;
 	$scope.message = "";
 	$scope.setCount = function(cnt) {
 		$scope.count = cnt;
@@ -15,51 +16,54 @@ app.controller('SuperController', function($scope, WebSocketClient,COMMAND,PAYLO
 		$scope.status += message + "\n";
 		$scope.$apply();
 	};
-	$scope.sendMessage = function(){
-		var payload = {};
-		payload[PAYLOAD_KEY.TYPE] = "MESS";
-		payload[PAYLOAD_KEY.DATA] = COMMAND.SEND_USB + ":"+$scope.message;
-		WebSocketClient.sendMessage( JSON.stringify(payload));
-		//WebSocketClient.sendMessage(COMMAND.SEND_USB + ":" +$scope.message);
-	};
+	
 	$scope._sendCommand = function(cmdData){
 		var payload = {};
-		payload[PAYLOAD_KEY.TYPE] = "CMD";
+		payload[PAYLOAD_KEY.TYPE] = "USB";
 		payload[PAYLOAD_KEY.DATA] = cmdData;
 		WebSocketClient.sendMessage(JSON.stringify(payload));
 	};
 	$scope.sendSwitchToAccessory = function() {
-		var payload =' { "operationName" :"' + COMMAND.USBCON_VENDOR_SWITCH_TO_ACCESSORY + '"}';
-		$scope._sendCommand({ "operationName" : COMMAND.USBCON_VENDOR_SWITCH_TO_ACCESSORY });
-		//$scope._sendCommand(COMMAND.USBCON_VENDOR_SWITCH_TO_ACCESSORY);
+		console.log($scope.selected);
+		var selected = $scope.selectedUsbDevice;
+		var payload = { "operationName" : COMMAND.USBCON_VENDOR_SWITCH_TO_ACCESSORY , "vendorId":selected.VENDOR_ID};
+		$scope._sendCommand(payload);
 		
 	};
+	$scope.sendUsbMessage = function(){
+		console.log($scope.message);
+		//var payload = { "operationName" : COMMAND.SEND_USB, "message" : $scope.message };
+		//$scope._sendCommand(payload);
+	};
 	$scope.sendConnectAndroidUSB = function() {
-		$scope._sendCommand(COMMAND.USBCON_ACCESSORY);
-		
+		var payload = { "operationName" : COMMAND.USBCON_ACCESSORY };
+		$scope._sendCommand(payload);
 	};
 	$scope.ping = function(arg) {
 		$scope._sendCommand(COMMAND.PING +":" + arg)
 	};
 	
 	$scope.onMessage = function(message){
+		
 		var data = undefined;
 		try{
 			data = JSON.parse(message);
 		}catch(err){
-			data ={"TYPE":"MESS", "DATA": message};
+			data ={};
+			data[PAYLOAD_KEY.TYPE] = "MESS";
+			data[PAYLOAD_KEY.DATA] = "ErrorParsing :" + message;
 		}
-
-		switch( data.TYPE ){
+		console.log(data[PAYLOAD_KEY.TYPE]);
+		switch( data[PAYLOAD_KEY.TYPE] ){
 			case "DEVICE_LIST" :
 				$scope.usbDevices = [];
-				for(var i in data.DATA){
-					var arec = data.DATA[i];
+				for(var i in data[PAYLOAD_KEY.DATA]){
+					var arec = data[PAYLOAD_KEY.DATA][i];
 					$scope.usbDevices.push(arec);
 				}
 				break;
 			case "MESS" : 
-				$scope.appendStatus(data.DATA);
+				$scope.appendStatus(data[PAYLOAD_KEY.DATA]);
 			default :
 					break;
 		}
