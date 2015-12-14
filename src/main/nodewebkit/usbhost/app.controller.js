@@ -29,7 +29,9 @@ app.controller('SuperController', function($scope, WebSocketClient,COMMAND,PAYLO
 		WebSocketClient.sendMessage(JSON.stringify(payload));
 	};
 	$scope.sendSwitchToAccessory = function() {
-		$scope._sendCommand(COMMAND.USBCON_VENDOR_SWITCH_TO_ACCESSORY);
+		var payload =' { "operationName" :"' + COMMAND.USBCON_VENDOR_SWITCH_TO_ACCESSORY + '"}';
+		$scope._sendCommand({ "operationName" : COMMAND.USBCON_VENDOR_SWITCH_TO_ACCESSORY });
+		//$scope._sendCommand(COMMAND.USBCON_VENDOR_SWITCH_TO_ACCESSORY);
 		
 	};
 	$scope.sendConnectAndroidUSB = function() {

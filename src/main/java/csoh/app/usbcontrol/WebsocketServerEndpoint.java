@@ -1,12 +1,16 @@
 package csoh.app.usbcontrol;
 
 import java.util.HashMap;
+
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
+
+import csoh.app.usbcontrol.WebsocketMessageFactory.Payload;
+import csoh.app.usbcontrol.WebsocketMessageFactory.UsbOperation;
 
 @ServerEndpoint("/usbhost")
 public class WebsocketServerEndpoint implements UsbMessageListener {
@@ -47,6 +51,8 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 
     @OnMessage
     public void handleMessage(String message, Session session) {
+    	
+    
 	
 	String[] parts = message.split(":");
 	int len = parts.length;
@@ -54,11 +60,17 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 	String arg = (len > 1) ? parts[1] : "";
 
 	try {
-	    switch (cmd) {
+		Payload<UsbOperation> p = wsFactory.jsonToPayloadOperation(message);
+		UsbOperation uo = p.getData();
+		String oper = uo.getOperationName();
+
+		switch (oper) {
 	    case USBCON_VENDOR_SWITCH_TO_ACCESSORY:
 
 		try {
 		    short tab3_vendorid = (short) 0x04e8; // Tab3,
+		    short test = uo.getVendorId();
+		    
 		    usbController.setupUsb(tab3_vendorid);
 		    int result = usbController.androidDeviceToAccessoryMode("CsohManufacturer", "CsohModel", "CsohDescription", "1.0", "http://www.mycompany.com", "SerialNumber");
 		    broadCastInJson(USBCON_VENDOR_SWITCH_TO_ACCESSORY + " - done.");

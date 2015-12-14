@@ -19,8 +19,8 @@ app.constant("COMMAND",{
 	
 });
 app.constant("PAYLOAD_KEY",{
-	TYPE : "TYPE",
-	DATA : "DATA"
+	TYPE : "type",
+	DATA : "data"
 });
 app.directive('scrollToBottomOnUpdate', function() {
 	  return {
