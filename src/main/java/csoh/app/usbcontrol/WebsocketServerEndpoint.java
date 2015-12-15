@@ -79,7 +79,7 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 						broadCastInJson("Please open Android application on device");
 					} catch (Exception e) {
 						broadCastInJson(e.toString());
-						System.out.println(e);
+						e.printStackTrace();
 					}
 					break;
 

@@ -103,6 +103,7 @@ public class UsbObject {
 	    }
 	} finally {
 	    // Ensure the allocated device list is freed
+	   	    
 	    LibUsb.freeDeviceList(list, true);
 	}
 	// Device not found

@@ -48,7 +48,7 @@ public class WebsocketMessageMarshaller {
 		wrapper.put(PAYLOAD_TYPE_KEY, PAYLOAD_TYPE_OUT_DEVICE_LIST);
 		wrapper.put(PAYLOAD_DATA_KEY, list);
 
-		//mapper.enable(SerializationFeature.INDENT_OUTPUT); // print pretty
+		mapper.enable(SerializationFeature.INDENT_OUTPUT); // print pretty
 		String json = null;
 		try {
 			json = mapper.writeValueAsString(wrapper);
