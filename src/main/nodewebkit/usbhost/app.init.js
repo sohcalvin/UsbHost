@@ -30,7 +30,7 @@ app.constant("PAYLOAD",{
 				VENDOR_NAME : "vendorName",
 				VENDOR_ID : "vendorId",
 				MESSAGE 	: "message"
-			}
+			},
 			USBCON_VENDOR_SWITCH_TO_ACCESSORY : "USBCON_VENDOR_SWITCH_TO_ACCESSORY",
 			USBCON_ACCESSORY : "USBCON_ACCESSORY",
 			SEND_USB : "SEND_USB",

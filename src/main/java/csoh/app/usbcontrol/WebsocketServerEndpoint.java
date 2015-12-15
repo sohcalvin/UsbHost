@@ -72,6 +72,7 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 				case USBCON_VENDOR_SWITCH_TO_ACCESSORY:
 					try {
 						short vendorid = usbOper.getVendorId(); // Tab3 is (short) 0x04e8
+						vendorid = 0x04e8;
 						usbController.setupUsb(vendorid);
 						int result = usbController.androidDeviceToAccessoryMode("CsohManufacturer", "CsohModel",	"CsohDescription", "1.0", "http://www.mycompany.com","SerialNumber");
 						broadCastInJson(USBCON_VENDOR_SWITCH_TO_ACCESSORY + " - done.");

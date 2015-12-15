@@ -17,12 +17,13 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
 public class WebsocketMessageMarshaller {
-	private static final String PAYLOAD_KEY_TYPE = "type";
-	private static final String PAYLOAD_KEY_DATA = "data";
-	private static final String PAYLOAD_TYPEVALUE_USB = "USB";
-	private static final String PAYLOAD_TYPEVALUE_MESS = "MESS";
-	private static final String PAYLOAD_TYPEVALUE_DEVICE_LIST = "DEVICE_LIST";
+	private static final String PAYLOAD_TYPE_KEY = "type";
+	private static final String PAYLOAD_TYPE_IN_USB = "USB";
+	private static final String PAYLOAD_TYPE_OUT_MESS = "MESS";
+	private static final String PAYLOAD_TYPE_OUT_DEVICE_LIST = "DEVICE_LIST";
+	private static final String PAYLOAD_DATA_KEY = "data";
 	
+
 	private static WebsocketMessageMarshaller instance = null;
 
 	private static ObjectMapper mapper = new ObjectMapper();
@@ -44,8 +45,8 @@ public class WebsocketMessageMarshaller {
 	public String deviceListToJson(
 			ArrayList<HashMap<UsbObject.DESCRIPTOR_FIELD, Object>> list) {
 		HashMap<String, Object> wrapper = new HashMap<String, Object>(2);
-		wrapper.put(PAYLOAD_KEY_TYPE, PAYLOAD_TYPEVALUE_DEVICE_LIST);
-		wrapper.put(PAYLOAD_KEY_DATA, list);
+		wrapper.put(PAYLOAD_TYPE_KEY, PAYLOAD_TYPE_OUT_DEVICE_LIST);
+		wrapper.put(PAYLOAD_DATA_KEY, list);
 
 		//mapper.enable(SerializationFeature.INDENT_OUTPUT); // print pretty
 		String json = null;
@@ -59,8 +60,8 @@ public class WebsocketMessageMarshaller {
 	}
 
 	public String messageToJson(String mess) {
-		return "{\"" + PAYLOAD_KEY_TYPE + "\" : \""+PAYLOAD_TYPEVALUE_MESS +"\", \""
-				+ PAYLOAD_KEY_DATA + "\" : \"" + mess + "\" }";
+		return "{\"" + PAYLOAD_TYPE_KEY + "\" : \""+PAYLOAD_TYPE_OUT_MESS +"\", \""
+				+ PAYLOAD_DATA_KEY + "\" : \"" + mess + "\" }";
 	}
 	
 	public Payload<UsbOperation> toPayloadUsbOperation(JsonNode node)
@@ -78,9 +79,9 @@ public class WebsocketMessageMarshaller {
 	}
 
 	public boolean isUsbCommand(JsonNode node) {
-		String type = node.get(WebsocketMessageMarshaller.PAYLOAD_KEY_TYPE)
+		String type = node.get(WebsocketMessageMarshaller.PAYLOAD_TYPE_KEY)
 				.asText();
-		if (type.equals(PAYLOAD_TYPEVALUE_USB))
+		if (type.equals(PAYLOAD_TYPE_IN_USB))
 			return true;
 		return false;
 	}
