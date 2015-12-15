@@ -26,21 +26,25 @@ app.controller('SuperController', function($scope, WebSocketClient,COMMAND,PAYLO
 	$scope.sendSwitchToAccessory = function() {
 		console.log($scope.selected);
 		var selected = $scope.selectedUsbDevice;
+		if(! selected ){
+			alert("Please select a device for connection");
+			return;
+		}
 		var payload = { "operationName" : COMMAND.USBCON_VENDOR_SWITCH_TO_ACCESSORY , "vendorId":selected.VENDOR_ID};
 		$scope._sendCommand(payload);
 		
 	};
 	$scope.sendUsbMessage = function(){
-		console.log($scope.message);
-		//var payload = { "operationName" : COMMAND.SEND_USB, "message" : $scope.message };
-		//$scope._sendCommand(payload);
+		var payload = { "operationName" : COMMAND.SEND_USB, "message" : $scope.message };
+		$scope._sendCommand(payload);
 	};
 	$scope.sendConnectAndroidUSB = function() {
 		var payload = { "operationName" : COMMAND.USBCON_ACCESSORY };
 		$scope._sendCommand(payload);
 	};
 	$scope.ping = function(arg) {
-		$scope._sendCommand(COMMAND.PING +":" + arg)
+		var payload = { "operationName" : COMMAND.PING };
+		$scope._sendCommand(payload);
 	};
 	
 	$scope.onMessage = function(message){
@@ -53,7 +57,7 @@ app.controller('SuperController', function($scope, WebSocketClient,COMMAND,PAYLO
 			data[PAYLOAD_KEY.TYPE] = "MESS";
 			data[PAYLOAD_KEY.DATA] = "ErrorParsing :" + message;
 		}
-		console.log(data[PAYLOAD_KEY.TYPE]);
+		//console.log(data[PAYLOAD_KEY.TYPE]);
 		switch( data[PAYLOAD_KEY.TYPE] ){
 			case "DEVICE_LIST" :
 				$scope.usbDevices = [];
