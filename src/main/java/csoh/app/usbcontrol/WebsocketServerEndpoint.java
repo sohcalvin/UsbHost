@@ -11,8 +11,8 @@ import javax.websocket.server.ServerEndpoint;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import csoh.app.usbcontrol.WebsocketMessageFactory.Payload;
-import csoh.app.usbcontrol.WebsocketMessageFactory.UsbOperation;
+import csoh.app.usbcontrol.WebsocketMessageMarshaller.Payload;
+import csoh.app.usbcontrol.WebsocketMessageMarshaller.UsbOperation;
 
 @ServerEndpoint("/usbhost")
 public class WebsocketServerEndpoint implements UsbMessageListener {
@@ -26,7 +26,7 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 	private static final String LOGPREFIX = "WEBSOCKET >> ";
 
 	UsbController usbController = UsbController.getInstance();
-	WebsocketMessageFactory wsFactory = WebsocketMessageFactory.getInstance();
+	WebsocketMessageMarshaller wsFactory = WebsocketMessageMarshaller.getInstance();
 
 	private static HashMap<String, Session> sessions = new HashMap<String, Session>();
 
@@ -125,11 +125,11 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 
 	}
 
-	public void broadCastInJson(String message) {
+	private void broadCastInJson(String message) {
 		broadCast(message, true);
 	}
 
-	public void broadCast(String message) {
+	private void broadCast(String message) {
 		broadCast(message, false);
 	}
 

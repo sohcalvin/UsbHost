@@ -16,28 +16,29 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
-public class WebsocketMessageFactory {
+public class WebsocketMessageMarshaller {
 	private static final String PAYLOAD_KEY_TYPE = "type";
 	private static final String PAYLOAD_KEY_DATA = "data";
 	private static final String PAYLOAD_TYPEVALUE_USB = "USB";
 	private static final String PAYLOAD_TYPEVALUE_MESS = "MESS";
 	private static final String PAYLOAD_TYPEVALUE_DEVICE_LIST = "DEVICE_LIST";
-	private static WebsocketMessageFactory instance = null;
+	
+	private static WebsocketMessageMarshaller instance = null;
 
 	private static ObjectMapper mapper = new ObjectMapper();
 
-	public static WebsocketMessageFactory getInstance() {
+	public static WebsocketMessageMarshaller getInstance() {
 		if (instance == null) {
-			synchronized (WebsocketMessageFactory.class) {
+			synchronized (WebsocketMessageMarshaller.class) {
 				if (instance == null) {
-					instance = new WebsocketMessageFactory();
+					instance = new WebsocketMessageMarshaller();
 				}
 			}
 		}
 		return instance;
 	}
 
-	private WebsocketMessageFactory() {
+	private WebsocketMessageMarshaller() {
 	}
 
 	public String deviceListToJson(
@@ -46,8 +47,7 @@ public class WebsocketMessageFactory {
 		wrapper.put(PAYLOAD_KEY_TYPE, PAYLOAD_TYPEVALUE_DEVICE_LIST);
 		wrapper.put(PAYLOAD_KEY_DATA, list);
 
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.enable(SerializationFeature.INDENT_OUTPUT); // print pretty
+		//mapper.enable(SerializationFeature.INDENT_OUTPUT); // print pretty
 		String json = null;
 		try {
 			json = mapper.writeValueAsString(wrapper);
@@ -62,6 +62,7 @@ public class WebsocketMessageFactory {
 		return "{\"" + PAYLOAD_KEY_TYPE + "\" : \""+PAYLOAD_TYPEVALUE_MESS +"\", \""
 				+ PAYLOAD_KEY_DATA + "\" : \"" + mess + "\" }";
 	}
+	
 	public Payload<UsbOperation> toPayloadUsbOperation(JsonNode node)
 			throws JsonParseException, JsonMappingException, IOException {
 		Payload<UsbOperation> p = mapper.convertValue(node,
@@ -77,7 +78,7 @@ public class WebsocketMessageFactory {
 	}
 
 	public boolean isUsbCommand(JsonNode node) {
-		String type = node.get(WebsocketMessageFactory.PAYLOAD_KEY_TYPE)
+		String type = node.get(WebsocketMessageMarshaller.PAYLOAD_KEY_TYPE)
 				.asText();
 		if (type.equals(PAYLOAD_TYPEVALUE_USB))
 			return true;

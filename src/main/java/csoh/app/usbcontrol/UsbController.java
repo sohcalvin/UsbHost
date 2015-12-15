@@ -254,7 +254,7 @@ public class UsbController implements Runnable {
 
     public String listConnectedDevices() {
     	ArrayList<HashMap<UsbObject.DESCRIPTOR_FIELD, Object>> list = UsbObject.getConnectedDeviceProperties(false);
-    	return WebsocketMessageFactory.getInstance().deviceListToJson(list);
+    	return WebsocketMessageMarshaller.getInstance().deviceListToJson(list);
     
     }    
 

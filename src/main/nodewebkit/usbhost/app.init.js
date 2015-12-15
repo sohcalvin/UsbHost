@@ -11,17 +11,34 @@ app.constant("WS_READY_STATE", {
 	2 : "Connection in closing handshake",
 	3 : "Connection is closed or could not open"
 });
-app.constant("COMMAND",{
-	USBCON_VENDOR_SWITCH_TO_ACCESSORY : "USBCON_VENDOR_SWITCH_TO_ACCESSORY",
-	USBCON_ACCESSORY : "USBCON_ACCESSORY",
-	SEND_USB : "SEND_USB",
-	PING : "PING"
-	
+app.constant("PAYLOAD",{
+	TYPE : {
+		KEY : "type",
+		OUT : {
+			USB: "USB",
+		},
+		IN : {
+			DEVICE_LIST : "DEVICE_LIST",
+			MESS : "MESS"
+		}
+	},
+	DATA : {
+		KEY : "data",
+		USB_OPERATION : {
+			KEY :{
+				OPERATION_NAME : "operationName",
+				VENDOR_NAME : "vendorName",
+				VENDOR_ID : "vendorId",
+				MESSAGE 	: "message"
+			}
+			USBCON_VENDOR_SWITCH_TO_ACCESSORY : "USBCON_VENDOR_SWITCH_TO_ACCESSORY",
+			USBCON_ACCESSORY : "USBCON_ACCESSORY",
+			SEND_USB : "SEND_USB",
+			PING : "PING"
+		}	
+	}
 });
-app.constant("PAYLOAD_KEY",{
-	TYPE : "type",
-	DATA : "data"
-});
+
 app.directive('scrollToBottomOnUpdate', function() {
 	  return {
 	    restrict: 'A', //E = element, A = attribute, C = class, M = comment
