@@ -207,12 +207,11 @@ public class UsbController implements Runnable {
 	ByteBuffer buffer = ByteBuffer.allocateDirect(dataLength);
 	IntBuffer transfered = IntBuffer.allocate(1);
 	int result = LibUsb.bulkTransfer(handle, endpoint, buffer, transfered, timeout);
-	if (result != LibUsb.SUCCESS)
-	    throw new LibUsbException("Control transfer failed", result);
+	if (result != LibUsb.SUCCESS)	    throw new LibUsbException("Control transfer failed", result);
 
 	byte[] placeholder = new byte[dataLength];
 	buffer.get(placeholder, 0, dataLength);
-	String usbInMessage = new String(placeholder);
+	String usbInMessage = (new String(placeholder)).trim();
 	notifyUsbMessageListeners(usbInMessage);
 	printOut(usbInMessage);
 	return result;

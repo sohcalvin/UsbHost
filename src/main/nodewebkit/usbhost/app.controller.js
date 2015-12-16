@@ -34,25 +34,25 @@ app.controller('SuperController', function($scope, WebSocketClient,PAYLOAD) {
 			return;
 		}
 		var payload ={};
-		payload[PAYLOAD.DATA.USB_OPERATION.OPERATION_NAME] = PAYLOAD.DATA.USB_OPERATION.USBCON_VENDOR_SWITCH_TO_ACCESSORY;
-		payload[PAYLOAD.DATA.USB_OPERATION.VENDOR_ID] = selected.VENDOR_ID;
+		payload[PAYLOAD.DATA.USB_OPERATION.KEY.OPERATION_NAME] = PAYLOAD.DATA.USB_OPERATION.USBCON_VENDOR_SWITCH_TO_ACCESSORY;
+		payload[PAYLOAD.DATA.USB_OPERATION.KEY.VENDOR_ID] = selected.VENDOR_ID;
 		$scope._sendCommand(payload);
 		
 	};
 	$scope.sendUsbMessage = function(){
 		var payload ={};
-		payload[PAYLOAD.DATA.USB_OPERATION.OPERATION_NAME] = PAYLOAD.DATA.USB_OPERATION.SEND_USB;
-		payload[PAYLOAD.DATA.USB_OPERATION.MESSAGE] =  $scope.message;
+		payload[PAYLOAD.DATA.USB_OPERATION.KEY.OPERATION_NAME] = PAYLOAD.DATA.USB_OPERATION.SEND_USB;
+		payload[PAYLOAD.DATA.USB_OPERATION.KEY.MESSAGE] =  $scope.message;
 		$scope._sendCommand(payload);
 	};
 	$scope.sendConnectAndroidUSB = function() {
 		var payload ={};
-		payload[PAYLOAD.DATA.USB_OPERATION.OPERATION_NAME] = PAYLOAD.DATA.USB_OPERATION.USBCON_ACCESSORY;
+		payload[PAYLOAD.DATA.USB_OPERATION.KEY.OPERATION_NAME] = PAYLOAD.DATA.USB_OPERATION.USBCON_ACCESSORY;
 		$scope._sendCommand(payload);
 	};
 	$scope.ping = function(arg) {
 		var payload ={};
-		payload[PAYLOAD.DATA.USB_OPERATION.OPERATION_NAME] =  PAYLOAD.DATA.USB_OPERATION.PING ;
+		payload[PAYLOAD.DATA.USB_OPERATION.KEY.OPERATION_NAME] =  PAYLOAD.DATA.USB_OPERATION.PING ;
 		$scope._sendCommand(payload);
 	};
 	
@@ -60,8 +60,11 @@ app.controller('SuperController', function($scope, WebSocketClient,PAYLOAD) {
 		
 		var data = undefined;
 		try{
+			
 			data = JSON.parse(message);
 		}catch(err){
+			console.log( message );
+			console.log(err);
 			data ={};
 			data[PAYLOAD.TYPE.KEY] = PAYLOAD.TYPE.IN.MESS;
 			data[PAYLOAD.DATA.KEY] = "ErrorParsing :" + message;

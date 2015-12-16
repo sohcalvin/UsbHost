@@ -98,7 +98,7 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 				case SEND_USB:
 					String arg = usbOper.getMessage();
 					usbController.sendMessageToAndroid(arg);
-					broadCast(SEND_USB + "(" + arg + ") - done.");
+					broadCastInJson(SEND_USB + "(" + arg + ") - done.");
 					break;
 //				case GET_CONNECTED_DEVICES:
 //					broadCast("GET_CONNECTED_DEVICES="
@@ -113,7 +113,7 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 					break;
 
 				default:
-					broadCast("Unrecognized command '" + message + "'");
+					broadCastInJson("Unrecognized command '" + message + "'");
 					break;
 
 				}
