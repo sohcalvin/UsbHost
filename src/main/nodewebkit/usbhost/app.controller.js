@@ -1,10 +1,14 @@
-app.controller('SuperController', function($scope, WebSocketClient,PAYLOAD) {
+app.controller('SuperController', function($scope, WebSocketClient,PAYLOAD, IMAGE) {
 	WebSocketClient.init($scope);
 	$scope.status = "";
 	$scope.count = 1;
 	$scope.usbDevices = [];
 	$scope.selectedUsbDevice;
 	$scope.message = "";
+	$scope.labelSwitchToAccessory = "Switch to Accessory";
+	$scope.imageSwitchToAccessory = IMAGE.SWITCH_TO_ACCESSORY_INIT;
+	$scope.labelConnectToAndroid = "Connect to Android";
+	$scope.imageConnectToAndroid = IMAGE.CONNECT_TO_ANDROID_INIT;
 	$scope.setCount = function(cnt) {
 		$scope.count = cnt;
 	};
@@ -80,8 +84,21 @@ app.controller('SuperController', function($scope, WebSocketClient,PAYLOAD) {
 				break;
 			case PAYLOAD.TYPE.IN.MESS : 
 				$scope.appendStatus(data[PAYLOAD.DATA.KEY]);
+				break;
+			case PAYLOAD.TYPE.IN.STATUS:
+				var target = data[PAYLOAD.DATA.STATUS.TARGET];
+				var value = data[PAYLOAD.DATA.STATUS.VALUE];
+				var state = data[PAYLOAD.DATA.STATUS.STATE];
+				if(target === PAYLOAD.DATA.STATUS.SWITCH_TO_ACCESSORY){
+					$scope.labelSwitchToAccessory = value;
+					$scope.imageSwitchToAccessory = (state === PAYLOAD.DATA.STATUS.PASS) ? IMAGE.SWITCH_TO_ACCESSORY_PASS : IMAGE.SWITCH_TO_ACCESSORY_FAIL;
+				}else if (target === PAYLOAD.DATA.STATUS.CONNECT_TO_ANDROID){
+					$scope.labelConnectToAndroid = value;
+					$scope.imageConnectToAndroid = (state === PAYLOAD.DATA.STATUS.PASS) ? IMAGE.CONNECT_TO_ANDROID_PASS : IMAGE.CONNECT_TO_ANDROID_FAIL;
+				}
+				break;
 			default :
-					break;
+				break;
 		}
 		$scope.$apply();
 	

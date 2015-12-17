@@ -62,15 +62,17 @@ img.no-resize {
 				</div>
 				<div class="row">
 					<button type="button" class="btn btn-primary col-md-2" ng-click="sendSwitchToAccessory()">To Accessory Mode</button>
-					<label class="col-md-5" for="status">Connect to Vendor USB device and switch to Accessory mode</label> <img src="./images/usb_disconnect.png" class="img-rounded col-md-5 no-resize">
+					<label class="col-md-5" for="status">{{labelSwitchToAccessory}}</label>
+					<img ng-src="./images/{{imageSwitchToAccessory}}" class="img-rounded col-md-5 no-resize">
 				</div>
 				<div class="row padTop">
 					<button type="button" class="btn btn-success col-md-2" ng-click="sendConnectAndroidUSB()">Reconnect to Android USB</button>
-					<label class="col-md-5" for="status">Reconnect to Accessory mode Android device </label> <img src="./images/usbandroid.png" class="img-rounded col-md-5 no-resize">
+					<label class="col-md-5" for="status">{{labelConnectToAndroid}}</label> 
+					<img ng-src="./images/{{imageConnectToAndroid}}" class="img-rounded col-md-5 no-resize">
 				</div>
 				<div class="row padTop">
 					<button type="button" class="btn btn-success col-md-2" ng-click="ping('aa')">Ping</button>
-					<label class="col-md-5" for="status"></label> <img src="./images/usbandroid.png" class="img-rounded col-md-5 no-resize">
+					<label class="col-md-5" for="status"></label> 
 				</div>
 			</div>
 

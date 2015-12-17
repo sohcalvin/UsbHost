@@ -11,6 +11,16 @@ app.constant("WS_READY_STATE", {
 	2 : "Connection in closing handshake",
 	3 : "Connection is closed or could not open"
 });
+
+app.constant("IMAGE", {
+	SWITCH_TO_ACCESSORY_INIT : "switchtoaccessory_init.jpg",
+	SWITCH_TO_ACCESSORY_PASS : "switchtoaccessory_pass.jpg",
+	SWITCH_TO_ACCESSORY_FAIL : "switchtoaccessory_fail.jpg",
+	CONNECT_TO_ANDROID_INIT : "connecttoaccessory_init.jpg",
+	CONNECT_TO_ANDROID_PASS : "connecttoaccessory_pass.jpg",
+	CONNECT_TO_ANDROID_FAIL : "connecttoaccessory_fail.jpg"
+});
+
 app.constant("PAYLOAD",{
 	TYPE : {
 		KEY : "type",
@@ -19,7 +29,8 @@ app.constant("PAYLOAD",{
 		},
 		IN : {
 			DEVICE_LIST : "DEVICE_LIST",
-			MESS : "MESS"
+			MESS : "MESS",
+			STATUS : "STATUS"
 		}
 	},
 	DATA : {
@@ -35,7 +46,21 @@ app.constant("PAYLOAD",{
 			USBCON_ACCESSORY : "USBCON_ACCESSORY",
 			SEND_USB : "SEND_USB",
 			PING : "PING"
-		}	
+		},
+		STATUS :{
+			KEY : { 
+				TARGET : "target",
+				STATE 	: "state",
+				VALUE : "value"
+			},
+			SWITCH_TO_ACCESSORY : "SWITCH_TO_ACCESSORY",
+			CONNECT_TO_ANDROID : "CONNECT_TO_ANDROID",
+			PASS : "PASS",
+			FAIL : "FAIL"
+		}
+	
+		
+	
 	}
 });
 
