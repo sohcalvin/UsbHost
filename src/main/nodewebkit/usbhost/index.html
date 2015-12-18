@@ -41,8 +41,12 @@ label {
 }
 
 img.no-resize {
-	max-height: 81px;
-	max-width: 81px;
+	max-height: 60px;
+	max-width: 60px;
+}
+
+select {
+	max-width: 400px
 }
 </style>
 
@@ -51,24 +55,24 @@ img.no-resize {
 <body>
 	<div class="padLeft padRight" ng-app="SuperApp" ng-controller="SuperController">
 		<div class="panel panel-default padTop padBottom">
-			<div class="container">
-				<div class="row">
-
-					<label class="col-md-2">Select list:</label> <select class=" col-md-10" id="usbSelect" 
+			<div class="container-fluid">
+				<div class="row padTop">
+					<label class="col-md-2">Select USB device </label> 
+					<select class="col-md-10" id="usbSelect"  
 					ng-options="item as item.VENDOR_NAME + ' / ' + item.PRODUCT_NAME  + ' / ' + item.VENDOR_ID  for item in usbDevices track by item.VENDOR_ID"
 						ng-model="selectedUsbDevice">
 <!-- 						<option ng-repeat="option in usbDevices" value="{{option.VENDOR_ID }}">{{option.VENDOR_NAME +"-"+ option.PRODUCT_NAME}}</option> -->
 					</select>
 				</div>
-				<div class="row">
+				<div class="row padTop">
 					<button type="button" class="btn btn-primary col-md-2" ng-click="sendSwitchToAccessory()">To Accessory Mode</button>
-					<label class="col-md-5" for="status">{{labelSwitchToAccessory}}</label>
 					<img ng-src="./images/{{imageSwitchToAccessory}}" class="img-rounded col-md-5 no-resize">
+					<label class="col-md-5" for="status">{{labelSwitchToAccessory}}</label>
 				</div>
 				<div class="row padTop">
-					<button type="button" class="btn btn-success col-md-2" ng-click="sendConnectAndroidUSB()">Reconnect to Android USB</button>
-					<label class="col-md-5" for="status">{{labelConnectToAndroid}}</label> 
-					<img ng-src="./images/{{imageConnectToAndroid}}" class="img-rounded col-md-5 no-resize">
+					<button type="button" class="btn btn-success col-md-2" ng-click="sendConnectAndroidUSB()">Connect to Android USB</button>
+ 					<img ng-src="./images/{{imageConnectToAndroid}}" class="img-rounded col-md-5 no-resize">
+					<label class="col-md-5" for="status">{{labelConnectToAndroid}}</label>
 				</div>
 				<div class="row padTop">
 					<button type="button" class="btn btn-success col-md-2" ng-click="ping('aa')">Ping</button>

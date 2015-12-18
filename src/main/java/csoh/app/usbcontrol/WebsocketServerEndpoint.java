@@ -105,8 +105,9 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 //							+ usbController.listConnectedDevices());
 //					break;
 				case PING:
-				    broadCastInJson(usbController.listConnectedDevices());
+				   // broadCastInJson(usbController.listConnectedDevices());
 					broadCastInJson("PINGED");
+					broadCastStatus("SWITCH_TO_ACCESSORY", "hellow", "PASS");
 					break;
 				case GET_SERVER_INFO:
 					broadCast(getServerInfo());
@@ -147,6 +148,11 @@ public class WebsocketServerEndpoint implements UsbMessageListener {
 				System.out.println(e);
 			}
 		}
+	}
+	private void broadCastStatus(String target, String value, String state){
+		String statusInJson = wsFactory.statusToJson(target, value, state);
+		System.out.println("----------\n" + statusInJson + "\n------\n");
+		broadCast(statusInJson);
 	}
 
 	private String getServerInfo() {

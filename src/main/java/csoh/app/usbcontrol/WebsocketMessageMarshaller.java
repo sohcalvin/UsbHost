@@ -21,7 +21,12 @@ public class WebsocketMessageMarshaller {
 	private static final String PAYLOAD_TYPE_IN_USB = "USB";
 	private static final String PAYLOAD_TYPE_OUT_MESS = "MESS";
 	private static final String PAYLOAD_TYPE_OUT_DEVICE_LIST = "DEVICE_LIST";
+	private static final String PAYLOAD_TYPE_OUT_STATUS = "STATUS";
 	private static final String PAYLOAD_DATA_KEY = "data";
+	private static final String PAYLOAD_DATA_STATUS_KEY_TARGET = "target";
+	private static final String PAYLOAD_DATA_STATUS_KEY_VALUE = "value";
+	private static final String PAYLOAD_DATA_STATUS_KEY_STATE = "state";
+	
 	
 
 	private static WebsocketMessageMarshaller instance = null;
@@ -64,6 +69,18 @@ public class WebsocketMessageMarshaller {
 				+ PAYLOAD_DATA_KEY + "\" : \"" + mess + "\" }";
 	}
 	
+	public String statusToJson(String target, String value, String state) {
+		if(target == null) target = "";
+		if(value == null) value = "";
+		if(state == null) state = "";
+		return "{\"" 
+				+ PAYLOAD_TYPE_KEY + "\" : \"" + PAYLOAD_TYPE_OUT_STATUS + "\", \""
+				+ PAYLOAD_DATA_KEY + "\" : {\"" 
+				+ PAYLOAD_DATA_STATUS_KEY_TARGET + "\" : \"" + target + "\",\""
+				+ PAYLOAD_DATA_STATUS_KEY_VALUE  + "\" : \"" + value +"\", \""
+				+ PAYLOAD_DATA_STATUS_KEY_STATE  + "\" : \"" + state + "\" }}";
+	}
+		
 	public Payload<UsbOperation> toPayloadUsbOperation(JsonNode node)
 			throws JsonParseException, JsonMappingException, IOException {
 		Payload<UsbOperation> p = mapper.convertValue(node,
